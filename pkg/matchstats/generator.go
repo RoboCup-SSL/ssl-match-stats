@@ -10,20 +10,14 @@ import (
 )
 
 type Generator struct {
-	metaDataProcessor MetaDataProcessor
-	gamePhaseDetector GamePhaseDetector
+	metaDataProcessor *MetaDataProcessor
+	gamePhaseDetector *GamePhaseDetector
 }
 
 func NewGenerator() *Generator {
 	generator := new(Generator)
-	generator.metaDataProcessor = MetaDataProcessor{}
-	generator.gamePhaseDetector = GamePhaseDetector{}
-
-	generator.metaDataProcessor.timeoutTimeNormal = 300_000_000
-	generator.metaDataProcessor.timeoutTimeExtra = 300_000_000 // should be 150_000_000 for all except 2019 (wrong config in new GC)
-	generator.metaDataProcessor.timeoutsNormal = 4
-	generator.metaDataProcessor.timeoutsExtra = 2
-
+	generator.metaDataProcessor = NewMetaDataProcessor()
+	generator.gamePhaseDetector = NewGamePhaseDetector()
 	return generator
 }
 

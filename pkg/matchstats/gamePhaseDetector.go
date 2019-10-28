@@ -10,6 +10,10 @@ type GamePhaseDetector struct {
 	gamePaused   bool
 }
 
+func NewGamePhaseDetector() *GamePhaseDetector {
+	return &GamePhaseDetector{gamePaused: false}
+}
+
 func (d *GamePhaseDetector) startNewPhase(matchStats *MatchStats, referee *sslproto.Referee, phaseType GamePhaseType) {
 	d.stopCurrentPhase(matchStats, referee)
 	prevPhase := d.currentPhase

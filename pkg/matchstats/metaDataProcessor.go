@@ -2,6 +2,7 @@ package matchstats
 
 import (
 	"github.com/RoboCup-SSL/ssl-go-tools/pkg/sslproto"
+	"log"
 	"time"
 )
 
@@ -11,6 +12,18 @@ type MetaDataProcessor struct {
 	timeoutsNormal    uint32
 	timeoutTimeExtra  uint32
 	timeoutsExtra     uint32
+}
+
+func NewMetaDataProcessor() *MetaDataProcessor {
+	metaDataProcessor := new(MetaDataProcessor)
+	// the referee messages only contain the remaining timeout time
+	// as we can not guarantee that log files a complete, we do not know for sure, how much timeout time
+	// was available initially, so we set it here explicitly based on the current rule set
+	metaDataProcessor.timeoutTimeNormal = 300_000_000
+	metaDataProcessor.timeoutTimeExtra = 150_000_000
+	metaDataProcessor.timeoutsNormal = 4
+	metaDataProcessor.timeoutsExtra = 2
+	return metaDataProcessor
 }
 
 func (m *MetaDataProcessor) OnNewStage(matchStats *MatchStats, referee *sslproto.Referee) {
@@ -53,16 +66,12 @@ func (m *MetaDataProcessor) OnLastRefereeMessage(matchStats *MatchStats, referee
 	matchStats.MatchDuration = uint32(endTime.Sub(m.startTime).Microseconds())
 
 	if uint32(*referee.Stage) <= uint32(sslproto.Referee_NORMAL_SECOND_HALF) {
-		matchStats.TeamStatsYellow.TimeoutTime = m.timeoutTimeNormal - *referee.Yellow.TimeoutTime
-		matchStats.TeamStatsBlue.TimeoutTime = m.timeoutTimeNormal - *referee.Blue.TimeoutTime
-		matchStats.TeamStatsYellow.Timeouts = m.timeoutsNormal - *referee.Yellow.Timeouts
-		matchStats.TeamStatsBlue.Timeouts = m.timeoutsNormal - *referee.Blue.Timeouts
+		addTimeout(matchStats.TeamStatsYellow, referee.Yellow, m.timeoutTimeNormal)
+		addTimeout(matchStats.TeamStatsBlue, referee.Blue, m.timeoutTimeNormal)
 		matchStats.ExtraTime = false
 	} else {
-		matchStats.TeamStatsYellow.TimeoutTime += m.timeoutTimeExtra - *referee.Yellow.TimeoutTime
-		matchStats.TeamStatsBlue.TimeoutTime += m.timeoutTimeExtra - *referee.Blue.TimeoutTime
-		matchStats.TeamStatsYellow.Timeouts += m.timeoutsExtra - *referee.Yellow.Timeouts
-		matchStats.TeamStatsBlue.Timeouts += m.timeoutsExtra - *referee.Blue.Timeouts
+		addTimeout(matchStats.TeamStatsYellow, referee.Yellow, m.timeoutTimeNormal)
+		addTimeout(matchStats.TeamStatsBlue, referee.Blue, m.timeoutTimeExtra)
 		matchStats.ExtraTime = true
 	}
 
@@ -77,6 +86,17 @@ func (m *MetaDataProcessor) OnLastRefereeMessage(matchStats *MatchStats, referee
 			}
 		}
 	}
+}
+
+func addTimeout(teamStats *TeamStats, teamInfo *sslproto.Referee_TeamInfo, availableTime uint32) {
+	if *teamInfo.TimeoutTime > availableTime {
+		log.Printf("Timeout time > available: %v > %v", *teamInfo.TimeoutTime, availableTime)
+		if availableTime == 150_000_000 {
+			availableTime = 300_000_000
+			log.Println("Fixing known bug: In 2019, timeout time in extra halves was 5min instead of 2.5min")
+		}
+	}
+	teamStats.TimeoutTime += availableTime - *teamInfo.TimeoutTime
 }
 
 func (m *MetaDataProcessor) OnNewRefereeMessage(matchStats *MatchStats, referee *sslproto.Referee) {
