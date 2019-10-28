@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/RoboCup-SSL/ssl-match-stats/pkg/csvexport"
 	"github.com/RoboCup-SSL/ssl-match-stats/pkg/matchstats"
 	"log"
 	"os"
@@ -61,16 +62,16 @@ func exportCsv() {
 		log.Fatal(err)
 	}
 
-	if err := matchstats.WriteGamePhaseDurations(&a.Collection, "game-phase-durations.csv"); err != nil {
+	if err := csvexport.WriteGamePhaseDurations(&a.Collection, "game-phase-durations.csv"); err != nil {
 		log.Fatal(err)
 	}
-	if err := matchstats.WriteTeamMetricsPerGame(&a.Collection, "team-metrics-per-game.csv"); err != nil {
+	if err := csvexport.WriteTeamMetricsPerGame(&a.Collection, "team-metrics-per-game.csv"); err != nil {
 		log.Fatal(err)
 	}
-	if err := matchstats.WriteTeamMetricsSum(&a.Collection, "team-metrics-sum.csv"); err != nil {
+	if err := csvexport.WriteTeamMetricsSum(&a.Collection, "team-metrics-sum.csv"); err != nil {
 		log.Fatal(err)
 	}
-	if err := matchstats.WriteGamePhases(&a.Collection, "game-phases.csv"); err != nil {
+	if err := csvexport.WriteGamePhases(&a.Collection, "game-phases.csv"); err != nil {
 		log.Fatal(err)
 	}
 }

@@ -1,7 +1,6 @@
 package matchstats
 
 import (
-	"github.com/RoboCup-SSL/ssl-go-tools/pkg/sslproto"
 	"log"
 )
 
@@ -13,7 +12,7 @@ func (d *GamePhaseAggregator) Aggregate(matchStats *MatchStats) {
 	matchStats.TimePerGamePhase = map[string]uint32{}
 	matchStats.RelTimePerGamePhase = map[string]float32{}
 
-	for _, p := range sslproto.GamePhaseType_name {
+	for _, p := range GamePhaseType_name {
 		matchStats.TimePerGamePhase[p] = 0
 	}
 
@@ -22,7 +21,7 @@ func (d *GamePhaseAggregator) Aggregate(matchStats *MatchStats) {
 	}
 
 	checkSum := uint32(0)
-	for _, p := range sslproto.GamePhaseType_name {
+	for _, p := range GamePhaseType_name {
 		checkSum += matchStats.TimePerGamePhase[p]
 		matchStats.RelTimePerGamePhase[p] = float32(matchStats.TimePerGamePhase[p]) / float32(matchStats.MatchDuration)
 	}

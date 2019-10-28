@@ -1,8 +1,8 @@
-package matchstats
+package csvexport
 
 import (
 	"encoding/csv"
-	"github.com/RoboCup-SSL/ssl-go-tools/pkg/sslproto"
+	"github.com/RoboCup-SSL/ssl-match-stats/pkg/matchstats"
 	"github.com/pkg/errors"
 	"os"
 	"sort"
@@ -35,18 +35,18 @@ func writeCsv(header []string, data [][]string, filename string) error {
 	return f.Close()
 }
 
-func WriteGamePhaseDurations(matchStatsCollection *MatchStatsCollection, filename string) error {
+func WriteGamePhaseDurations(matchStatsCollection *matchstats.MatchStatsCollection, filename string) error {
 
 	header := []string{"File", "Extra time", "Shootout"}
-	for i := 0; i < len(sslproto.GamePhaseType_name); i++ {
-		header = append(header, sslproto.GamePhaseType_name[int32(i)][6:])
+	for i := 0; i < len(matchstats.GamePhaseType_name); i++ {
+		header = append(header, matchstats.GamePhaseType_name[int32(i)][6:])
 	}
 
 	var records [][]string
 	for _, matchStats := range matchStatsCollection.MatchStats {
 		record := []string{matchStats.Name, strconv.FormatBool(matchStats.ExtraTime), strconv.FormatBool(matchStats.Shootout)}
-		for i := 0; i < len(sslproto.GamePhaseType_name); i++ {
-			name := sslproto.GamePhaseType_name[int32(i)]
+		for i := 0; i < len(matchstats.GamePhaseType_name); i++ {
+			name := matchstats.GamePhaseType_name[int32(i)]
 			record = append(record, uintToStr(matchStats.TimePerGamePhase[name]))
 		}
 		records = append(records, record)
@@ -55,7 +55,7 @@ func WriteGamePhaseDurations(matchStatsCollection *MatchStatsCollection, filenam
 	return writeCsv(header, records, filename)
 }
 
-func WriteTeamMetricsPerGame(matchStatsCollection *MatchStatsCollection, filename string) error {
+func WriteTeamMetricsPerGame(matchStatsCollection *matchstats.MatchStatsCollection, filename string) error {
 
 	header := []string{"File", "Team", "Scored Goals", "Conceded Goals", "Fouls", "Yellow Cards", "Red Cards", "Timeout Time", "Timeouts", "Penalty Shots", "Ball Placement Time", "Ball Placements", "Max active Yellow Cards"}
 
@@ -72,14 +72,14 @@ func WriteTeamMetricsPerGame(matchStatsCollection *MatchStatsCollection, filenam
 	return writeCsv(header, records, filename)
 }
 
-func WriteTeamMetricsSum(matchStatsCollection *MatchStatsCollection, filename string) error {
+func WriteTeamMetricsSum(matchStatsCollection *matchstats.MatchStatsCollection, filename string) error {
 
 	header := []string{"Team", "Scored Goals", "Conceded Goals", "Fouls", "Yellow Cards", "Red Cards", "Timeout Time", "Timeouts", "Penalty Shots", "Ball Placement Time", "Ball Placements", "Max active Yellow Cards"}
 
-	teams := map[string]*TeamStats{}
+	teams := map[string]*matchstats.TeamStats{}
 	for _, matchStats := range matchStatsCollection.MatchStats {
-		teams[matchStats.TeamStatsYellow.Name] = &TeamStats{Name: matchStats.TeamStatsYellow.Name}
-		teams[matchStats.TeamStatsBlue.Name] = &TeamStats{Name: matchStats.TeamStatsBlue.Name}
+		teams[matchStats.TeamStatsYellow.Name] = &matchstats.TeamStats{Name: matchStats.TeamStatsYellow.Name}
+		teams[matchStats.TeamStatsBlue.Name] = &matchstats.TeamStats{Name: matchStats.TeamStatsBlue.Name}
 	}
 
 	for _, matchStats := range matchStatsCollection.MatchStats {
@@ -102,7 +102,7 @@ func WriteTeamMetricsSum(matchStatsCollection *MatchStatsCollection, filename st
 	return writeCsv(header, records, filename)
 }
 
-func WriteGamePhases(matchStatsCollection *MatchStatsCollection, filename string) error {
+func WriteGamePhases(matchStatsCollection *matchstats.MatchStatsCollection, filename string) error {
 	header := []string{
 		"File",
 		"Type",
@@ -174,7 +174,7 @@ func WriteGamePhases(matchStatsCollection *MatchStatsCollection, filename string
 	return writeCsv(header, records, filename)
 }
 
-func addTeamStats(to *TeamStats, team *TeamStats) {
+func addTeamStats(to *matchstats.TeamStats, team *matchstats.TeamStats) {
 	to.Goals += team.Goals
 	to.ConcededGoals += team.ConcededGoals
 	to.Fouls += team.Fouls
@@ -190,7 +190,7 @@ func addTeamStats(to *TeamStats, team *TeamStats) {
 	}
 }
 
-func teamNumbers(stats *TeamStats) []string {
+func teamNumbers(stats *matchstats.TeamStats) []string {
 	return []string{
 		stats.Name,
 		uintToStr(stats.Goals),
