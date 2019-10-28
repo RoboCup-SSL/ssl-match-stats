@@ -6,6 +6,7 @@ import (
 	"github.com/pkg/errors"
 	"log"
 	"path/filepath"
+	"sort"
 	"time"
 )
 
@@ -102,19 +103,36 @@ func packetTimeStampToTime(packetTimestamp uint64) time.Time {
 func Aggregate(matchStats *MatchStats) {
 
 	matchStats.GamePhaseStats = map[string]*GamePhaseStats{}
+	durations := map[string][]int{}
 
 	for _, p := range GamePhaseType_name {
 		matchStats.GamePhaseStats[p] = new(GamePhaseStats)
+		matchStats.GamePhaseStats[p].Duration = 0
 	}
 
 	for _, p := range matchStats.GamePhases {
-		matchStats.GamePhaseStats[(*p).Type.String()].Duration += p.Duration
+		phaseName := (*p).Type.String()
+		stats := matchStats.GamePhaseStats[phaseName]
+		stats.Duration += p.Duration
+		durations[phaseName] = append(durations[phaseName], int(p.Duration))
+	}
+
+	for _, phaseName := range GamePhaseType_name {
+		stats := matchStats.GamePhaseStats[phaseName]
+		phaseDurations := durations[phaseName]
+		if len(phaseDurations) > 0 {
+			sort.Ints(phaseDurations)
+			stats.DurationMin = uint32(phaseDurations[0])
+			stats.DurationMax = uint32(phaseDurations[len(phaseDurations)-1])
+			stats.DurationMedian = uint32(phaseDurations[len(phaseDurations)/2])
+			stats.DurationAvg = float32(stats.Duration) / float32(len(phaseDurations))
+		}
 	}
 
 	checkSum := uint32(0)
-	for _, p := range GamePhaseType_name {
-		checkSum += matchStats.GamePhaseStats[p].Duration
-		matchStats.GamePhaseStats[p].DurationRelative = float32(matchStats.GamePhaseStats[p].Duration) / float32(matchStats.MatchDuration)
+	for _, phaseName := range GamePhaseType_name {
+		checkSum += matchStats.GamePhaseStats[phaseName].Duration
+		matchStats.GamePhaseStats[phaseName].DurationRelative = float32(matchStats.GamePhaseStats[phaseName].Duration) / float32(matchStats.MatchDuration)
 	}
 
 	if matchStats.MatchDuration != checkSum {

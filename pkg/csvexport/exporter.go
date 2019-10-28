@@ -40,3 +40,7 @@ func uintToStr(n uint32) string {
 func intToStr(n int32) string {
 	return strconv.FormatInt(int64(n), 10)
 }
+
+func floatToStr(n float32) string {
+	return strconv.FormatFloat(float64(n), 'f', 2, 32)
+}

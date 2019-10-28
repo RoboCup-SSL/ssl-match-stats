@@ -100,6 +100,10 @@ message TeamStats {
 message GamePhaseStats {
     uint32 duration = 1;
     float duration_relative = 2;
+    uint32 duration_min = 3;
+    uint32 duration_max = 4;
+    uint32 duration_median = 5;
+    float duration_avg = 6;
 }
 
 message MatchStats {
