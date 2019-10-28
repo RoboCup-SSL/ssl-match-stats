@@ -17,7 +17,7 @@ func WriteGamePhaseDurations(matchStatsCollection *matchstats.MatchStatsCollecti
 		record := []string{matchStats.Name, strconv.FormatBool(matchStats.ExtraTime), strconv.FormatBool(matchStats.Shootout)}
 		for i := 0; i < len(matchstats.GamePhaseType_name); i++ {
 			name := matchstats.GamePhaseType_name[int32(i)]
-			record = append(record, uintToStr(matchStats.TimePerGamePhase[name]))
+			record = append(record, uintToStr(matchStats.GamePhaseStats[name].Duration))
 		}
 		records = append(records, record)
 	}

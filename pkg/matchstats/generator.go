@@ -10,16 +10,14 @@ import (
 )
 
 type Generator struct {
-	metaDataProcessor   MetaDataProcessor
-	gamePhaseDetector   GamePhaseDetector
-	gamePhaseAggregator GamePhaseAggregator
+	metaDataProcessor MetaDataProcessor
+	gamePhaseDetector GamePhaseDetector
 }
 
 func NewGenerator() *Generator {
 	generator := new(Generator)
 	generator.metaDataProcessor = MetaDataProcessor{}
 	generator.gamePhaseDetector = GamePhaseDetector{}
-	generator.gamePhaseAggregator = GamePhaseAggregator{}
 
 	generator.metaDataProcessor.timeoutTimeNormal = 300_000_000
 	generator.metaDataProcessor.timeoutTimeExtra = 300_000_000 // should be 150_000_000 for all except 2019 (wrong config in new GC)
@@ -73,7 +71,7 @@ func (m *Generator) Process(filename string) (*MatchStats, error) {
 
 	m.OnLastRefereeMessage(matchStats, lastRefereeMsg)
 
-	m.gamePhaseAggregator.Aggregate(matchStats)
+	Aggregate(matchStats)
 
 	return matchStats, logReader.Close()
 }
@@ -105,4 +103,27 @@ func packetTimeStampToTime(packetTimestamp uint64) time.Time {
 	seconds := int64(packetTimestamp / 1_000_000)
 	nanoSeconds := int64(packetTimestamp-uint64(seconds*1_000_000)) * 1000
 	return time.Unix(seconds, nanoSeconds)
+}
+
+func Aggregate(matchStats *MatchStats) {
+
+	matchStats.GamePhaseStats = map[string]*GamePhaseStats{}
+
+	for _, p := range GamePhaseType_name {
+		matchStats.GamePhaseStats[p] = new(GamePhaseStats)
+	}
+
+	for _, p := range matchStats.GamePhases {
+		matchStats.GamePhaseStats[(*p).Type.String()].Duration += p.Duration
+	}
+
+	checkSum := uint32(0)
+	for _, p := range GamePhaseType_name {
+		checkSum += matchStats.GamePhaseStats[p].Duration
+		matchStats.GamePhaseStats[p].DurationRelative = float32(matchStats.GamePhaseStats[p].Duration) / float32(matchStats.MatchDuration)
+	}
+
+	if matchStats.MatchDuration != checkSum {
+		log.Printf("Match duration mismatch. Total: %v, Sum of phases: %v, Diff: %v", matchStats.MatchDuration, checkSum, matchStats.MatchDuration-checkSum)
+	}
 }

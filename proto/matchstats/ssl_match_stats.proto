@@ -97,16 +97,20 @@ message TeamStats {
     uint32 max_active_yellow_cards = 13;
 }
 
+message GamePhaseStats {
+    uint32 duration = 1;
+    float duration_relative = 2;
+}
+
 message MatchStats {
     string name = 1;
-    repeated GamePhase game_phases = 2;
-    uint32 match_duration = 3;
+    uint32 match_duration = 2;
+    repeated GamePhase game_phases = 3;
     bool extra_time = 4;
     bool shootout = 5;
-    map<string, uint32> time_per_game_phase = 6;
-    map<string, float> rel_time_per_game_phase = 7;
-    TeamStats team_stats_yellow = 8;
-    TeamStats team_stats_blue = 9;
+    map<string, GamePhaseStats> game_phase_stats = 6;
+    TeamStats team_stats_yellow = 7;
+    TeamStats team_stats_blue = 8;
 }
 
 message MatchStatsCollection {
