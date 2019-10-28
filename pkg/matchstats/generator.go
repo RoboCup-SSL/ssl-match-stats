@@ -107,15 +107,14 @@ func AggregateGamePhaseStats(matchStats *MatchStats) {
 	matchStats.GamePhaseDurations = map[string]*DurationStats{}
 	durations := map[string][]int{}
 
-	for _, p := range GamePhaseType_name {
-		matchStats.GamePhaseDurations[p] = new(DurationStats)
-		matchStats.GamePhaseDurations[p].Duration = 0
+	for _, phaseName := range GamePhaseType_name {
+		matchStats.GamePhaseDurations[phaseName] = new(DurationStats)
 	}
 
-	for _, p := range matchStats.GamePhases {
-		phaseName := (*p).Type.String()
-		matchStats.GamePhaseDurations[phaseName].Duration += p.Duration
-		durations[phaseName] = append(durations[phaseName], int(p.Duration))
+	for _, phase := range matchStats.GamePhases {
+		phaseName := (*phase).Type.String()
+		matchStats.GamePhaseDurations[phaseName].Duration += phase.Duration
+		durations[phaseName] = append(durations[phaseName], int(phase.Duration))
 	}
 
 	for _, phaseName := range GamePhaseType_name {
@@ -151,15 +150,15 @@ func AggregateGameEvents(matchStats *MatchStats) {
 		matchStats.GameEventDurations[p].Duration = 0
 	}
 
-	for _, p := range matchStats.GamePhases {
-		if len(p.GameEventsEntry) == 0 {
+	for _, phase := range matchStats.GamePhases {
+		if len(phase.GameEventsEntry) == 0 {
 			continue
 		}
 
-		primaryEvent := p.GameEventsEntry[0]
+		primaryEvent := phase.GameEventsEntry[0]
 		eventName := primaryEvent.Type.String()
-		matchStats.GameEventDurations[eventName].Duration += p.Duration
-		durations[eventName] = append(durations[eventName], int(p.Duration))
+		matchStats.GameEventDurations[eventName].Duration += phase.Duration
+		durations[eventName] = append(durations[eventName], int(phase.Duration))
 	}
 
 	for _, eventName := range sslproto.GameEventType_name {

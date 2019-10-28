@@ -31,6 +31,20 @@ func (a *Aggregator) Process(filename string) error {
 	return nil
 }
 
+func (a *Aggregator) Aggregate() error {
+	if err := a.AggregateGamePhases(); err != nil {
+		return err
+	}
+	if err := a.AggregateGameEvents(); err != nil {
+		return err
+	}
+	if err := a.AggregateTeamMetrics(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (a *Aggregator) WriteJson(filename string) error {
 	f, err := os.Create(filename)
 	if err != nil {

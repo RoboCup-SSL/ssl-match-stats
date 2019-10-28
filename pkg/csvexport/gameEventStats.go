@@ -28,3 +28,23 @@ func WriteGameEventDurationStats(matchStatsCollection *matchstats.MatchStatsColl
 
 	return writeCsv(header, records, filename)
 }
+
+func WriteGameEventDurationStatsAggregated(matchStatsCollection *matchstats.MatchStatsCollection, filename string) error {
+
+	header := []string{"Game Event", "Duration Sum", "Min Duration", "Median Duration", "Avg Duration", "Max Duration"}
+
+	var records [][]string
+	for _, eventName := range sslproto.GameEventType_name {
+		record := []string{
+			eventName,
+			uintToStr(matchStatsCollection.GameEventDurations[eventName].Duration),
+			uintToStr(matchStatsCollection.GameEventDurations[eventName].DurationMin),
+			uintToStr(matchStatsCollection.GameEventDurations[eventName].DurationMedian),
+			uintToStr(uint32(math.Round(float64(matchStatsCollection.GameEventDurations[eventName].DurationAvg)))),
+			uintToStr(matchStatsCollection.GameEventDurations[eventName].DurationMax),
+		}
+		records = append(records, record)
+	}
+
+	return writeCsv(header, records, filename)
+}

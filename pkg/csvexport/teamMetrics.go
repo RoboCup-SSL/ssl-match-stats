@@ -26,47 +26,21 @@ func WriteTeamMetricsSum(matchStatsCollection *matchstats.MatchStatsCollection, 
 
 	header := []string{"Team", "Scored Goals", "Conceded Goals", "Fouls", "Yellow Cards", "Red Cards", "Timeout Time", "Timeouts", "Penalty Shots", "Ball Placement Time", "Ball Placements", "Max active Yellow Cards"}
 
-	teams := map[string]*matchstats.TeamStats{}
-	for _, matchStats := range matchStatsCollection.MatchStats {
-		teams[matchStats.TeamStatsYellow.Name] = &matchstats.TeamStats{Name: matchStats.TeamStatsYellow.Name}
-		teams[matchStats.TeamStatsBlue.Name] = &matchstats.TeamStats{Name: matchStats.TeamStatsBlue.Name}
-	}
-
-	for _, matchStats := range matchStatsCollection.MatchStats {
-		addTeamStats(teams[matchStats.TeamStatsYellow.Name], matchStats.TeamStatsYellow)
-		addTeamStats(teams[matchStats.TeamStatsBlue.Name], matchStats.TeamStatsBlue)
-	}
-
 	var teamNamesSorted []string
-	for k := range teams {
+	for k := range matchStatsCollection.TeamStats {
 		teamNamesSorted = append(teamNamesSorted, k)
 	}
 	sort.Strings(teamNamesSorted)
 
 	var records [][]string
 	for _, teamName := range teamNamesSorted {
-		teamStats := teams[teamName]
+		teamStats := matchStatsCollection.TeamStats[teamName]
 		records = append(records, teamNumbers(teamStats))
 	}
 
 	return writeCsv(header, records, filename)
 }
 
-func addTeamStats(to *matchstats.TeamStats, team *matchstats.TeamStats) {
-	to.Goals += team.Goals
-	to.ConcededGoals += team.ConcededGoals
-	to.Fouls += team.Fouls
-	to.YellowCards += team.YellowCards
-	to.RedCards += team.RedCards
-	to.TimeoutTime += team.TimeoutTime
-	to.Timeouts += team.Timeouts
-	to.PenaltyShotsTotal += team.PenaltyShotsTotal
-	to.BallPlacementTime += team.BallPlacementTime
-	to.BallPlacements += team.BallPlacements
-	if to.MaxActiveYellowCards < team.MaxActiveYellowCards {
-		to.MaxActiveYellowCards = team.MaxActiveYellowCards
-	}
-}
 func teamNumbers(stats *matchstats.TeamStats) []string {
 	return []string{
 		stats.Name,

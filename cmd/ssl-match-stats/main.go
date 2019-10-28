@@ -45,6 +45,10 @@ func generate() {
 		}
 	}
 
+	if err := a.Aggregate(); err != nil {
+		log.Println("Failed to aggregate match stats", err)
+	}
+
 	if err := a.WriteBin("out.bin"); err != nil {
 		log.Println("Could not write binary file", err)
 	}
@@ -62,22 +66,30 @@ func exportCsv() {
 		log.Fatal(err)
 	}
 
+	if err := csvexport.WriteGamePhases(&a.Collection, "game-phases.csv"); err != nil {
+		log.Fatal(err)
+	}
 	if err := csvexport.WriteGamePhaseDurations(&a.Collection, "game-phase-durations.csv"); err != nil {
 		log.Fatal(err)
 	}
-	if err := csvexport.WriteGamePhaseDurationStats(&a.Collection, "game-phase-duration-stats.csv"); err != nil {
-		log.Fatal(err)
-	}
+
 	if err := csvexport.WriteTeamMetricsPerGame(&a.Collection, "team-metrics-per-game.csv"); err != nil {
 		log.Fatal(err)
 	}
 	if err := csvexport.WriteTeamMetricsSum(&a.Collection, "team-metrics-sum.csv"); err != nil {
 		log.Fatal(err)
 	}
-	if err := csvexport.WriteGamePhases(&a.Collection, "game-phases.csv"); err != nil {
+
+	if err := csvexport.WriteGamePhaseDurationStats(&a.Collection, "game-phase-duration-stats.csv"); err != nil {
 		log.Fatal(err)
 	}
-	if err := csvexport.WriteGameEventDurationStats(&a.Collection, "game-event-durations.csv"); err != nil {
+	if err := csvexport.WriteGamePhaseDurationStatsAggregated(&a.Collection, "game-phase-duration-stats-aggregated.csv"); err != nil {
+		log.Fatal(err)
+	}
+	if err := csvexport.WriteGameEventDurationStats(&a.Collection, "game-event-duration-stats.csv"); err != nil {
+		log.Fatal(err)
+	}
+	if err := csvexport.WriteGameEventDurationStatsAggregated(&a.Collection, "game-event-duration-stats-aggregated.csv"); err != nil {
 		log.Fatal(err)
 	}
 }

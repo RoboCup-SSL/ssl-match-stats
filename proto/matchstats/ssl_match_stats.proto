@@ -120,4 +120,7 @@ message MatchStats {
 
 message MatchStatsCollection {
     repeated MatchStats match_stats = 1;
+    map<string,TeamStats> team_stats = 2;
+    map<string, DurationStats> game_phase_durations = 3;
+    map<string, DurationStats> game_event_durations = 4;
 }

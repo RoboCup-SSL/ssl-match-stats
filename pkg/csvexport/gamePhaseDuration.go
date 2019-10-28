@@ -16,9 +16,8 @@ func WriteGamePhaseDurations(matchStatsCollection *matchstats.MatchStatsCollecti
 	var records [][]string
 	for _, matchStats := range matchStatsCollection.MatchStats {
 		record := []string{matchStats.Name, strconv.FormatBool(matchStats.ExtraTime), strconv.FormatBool(matchStats.Shootout)}
-		for i := 0; i < len(matchstats.GamePhaseType_name); i++ {
-			name := matchstats.GamePhaseType_name[int32(i)]
-			record = append(record, uintToStr(matchStats.GamePhaseDurations[name].Duration))
+		for _, phaseName := range matchstats.GamePhaseType_name {
+			record = append(record, uintToStr(matchStats.GamePhaseDurations[phaseName].Duration))
 		}
 		records = append(records, record)
 	}
@@ -48,6 +47,26 @@ func WriteGamePhaseDurationStats(matchStatsCollection *matchstats.MatchStatsColl
 			}
 			records = append(records, record)
 		}
+	}
+
+	return writeCsv(header, records, filename)
+}
+
+func WriteGamePhaseDurationStatsAggregated(matchStatsCollection *matchstats.MatchStatsCollection, filename string) error {
+
+	header := []string{"Phase", "Duration Sum", "Min Duration", "Median Duration", "Avg Duration", "Max Duration"}
+
+	var records [][]string
+	for _, phaseName := range matchstats.GamePhaseType_name {
+		record := []string{
+			phaseName,
+			uintToStr(matchStatsCollection.GamePhaseDurations[phaseName].Duration),
+			uintToStr(matchStatsCollection.GamePhaseDurations[phaseName].DurationMin),
+			uintToStr(matchStatsCollection.GamePhaseDurations[phaseName].DurationMedian),
+			uintToStr(uint32(math.Round(float64(matchStatsCollection.GamePhaseDurations[phaseName].DurationAvg)))),
+			uintToStr(matchStatsCollection.GamePhaseDurations[phaseName].DurationMax),
+		}
+		records = append(records, record)
 	}
 
 	return writeCsv(header, records, filename)
