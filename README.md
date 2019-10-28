@@ -6,11 +6,11 @@
 
 # ssl-match-stats
 
-Collection of packages to do common stuff for the RoboCup SSL league like reading, writing, sending, receiving and parsing messages.
+A tool that generates statistics from [official SSL log files](https://ssl.robocup.org/game-logs/).
 
 ## Requirements
 You need to install following dependencies first: 
- * Go >= 1.9
+ * Go >= 1.11
  
 ## Installation
 
@@ -23,13 +23,18 @@ go get -u github.com/RoboCup-SSL/ssl-match-stats/...
 ## Run
 The executables are installed to your $GOPATH/bin folder. If you have it on your $PATH, you can directly run them. Else, switch to this folder first.
 
-## Usage and further details
+## Usage
 
-Have a look at the individual packages and their containing READMEs:
+The binary is called `ssl-match-stats`.
 
- * [ssl-recorder](cmd/ssl-recorder/README.md)
- * [ssl-player](cmd/ssl-player/README.md)
- * [ssl-logcutter](cmd/ssl-logcutter/README.md)
- * [ssl-logstats](cmd/ssl-logstats/README.md)
- * [matchduration](cmd/matchduration/README.md)
- * [numcards](cmd/numcards/README.md)
+### Generate statistics from log files
+
+Pass in a list of log files to be processed: `ssl-match-stats -generate *.log.gz`
+
+### Export statistics to CSV files
+
+First, generate the statistics with the command above. This will produce a `out.json` and `out.bin` file.
+
+Run: `ssl-match-stats -exportCsv`
+
+This will generate `*.csv` files that you can import in your favorite tool, like a spreadsheet tool.
