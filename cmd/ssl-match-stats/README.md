@@ -7,7 +7,7 @@ Gather statistics from a set of [official SSL log files](https://ssl.robocup.org
 Use go-get to install this executable:
 
 ```
-go get -u github.com/RoboCup-SSL/ssl-go-tools/cmd/ssl-match-stats
+go get -u github.com/RoboCup-SSL/ssl-match-stats/cmd/ssl-match-stats
 ```
 
 ## Usage

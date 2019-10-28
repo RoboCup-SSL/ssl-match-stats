@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/RoboCup-SSL/ssl-go-tools/pkg/matchstats"
+	"github.com/RoboCup-SSL/ssl-match-stats/pkg/matchstats"
 	"log"
 	"os"
 )

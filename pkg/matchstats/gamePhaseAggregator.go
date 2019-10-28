@@ -8,7 +8,7 @@ import (
 type GamePhaseAggregator struct {
 }
 
-func (d *GamePhaseAggregator) Aggregate(matchStats *sslproto.MatchStats) {
+func (d *GamePhaseAggregator) Aggregate(matchStats *MatchStats) {
 
 	matchStats.TimePerGamePhase = map[string]uint32{}
 	matchStats.RelTimePerGamePhase = map[string]float32{}

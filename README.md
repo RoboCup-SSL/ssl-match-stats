@@ -1,10 +1,10 @@
-[![CircleCI](https://circleci.com/gh/RoboCup-SSL/ssl-go-tools/tree/master.svg?style=svg)](https://circleci.com/gh/RoboCup-SSL/ssl-go-tools/tree/master)
-[![Go Report Card](https://goreportcard.com/badge/github.com/RoboCup-SSL/ssl-go-tools?style=flat-square)](https://goreportcard.com/report/github.com/RoboCup-SSL/ssl-go-tools)
-[![Go Doc](https://img.shields.io/badge/godoc-reference-blue.svg?style=flat-square)](https://godoc.org/github.com/RoboCup-SSL/ssl-go-tools)
-[![Coverage](https://img.shields.io/badge/coverage-report-blue.svg)](https://circleci.com/api/v1.1/project/github/RoboCup-SSL/ssl-go-tools/latest/artifacts/0/coverage?branch=master)
+[![CircleCI](https://circleci.com/gh/RoboCup-SSL/ssl-match-stats/tree/master.svg?style=svg)](https://circleci.com/gh/RoboCup-SSL/ssl-match-stats/tree/master)
+[![Go Report Card](https://goreportcard.com/badge/github.com/RoboCup-SSL/ssl-match-stats?style=flat-square)](https://goreportcard.com/report/github.com/RoboCup-SSL/ssl-match-stats)
+[![Go Doc](https://img.shields.io/badge/godoc-reference-blue.svg?style=flat-square)](https://godoc.org/github.com/RoboCup-SSL/ssl-match-stats)
+[![Coverage](https://img.shields.io/badge/coverage-report-blue.svg)](https://circleci.com/api/v1.1/project/github/RoboCup-SSL/ssl-match-stats/latest/artifacts/0/coverage?branch=master)
 
 
-# ssl-go-tools
+# ssl-match-stats
 
 Collection of packages to do common stuff for the RoboCup SSL league like reading, writing, sending, receiving and parsing messages.
 
@@ -17,7 +17,7 @@ You need to install following dependencies first:
 Use go get to install all packages / executables:
 
 ```
-go get -u github.com/RoboCup-SSL/ssl-go-tools/...
+go get -u github.com/RoboCup-SSL/ssl-match-stats/...
 ```
 
 ## Run

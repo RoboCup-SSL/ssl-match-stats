@@ -35,7 +35,7 @@ func writeCsv(header []string, data [][]string, filename string) error {
 	return f.Close()
 }
 
-func WriteGamePhaseDurations(matchStatsCollection *sslproto.MatchStatsCollection, filename string) error {
+func WriteGamePhaseDurations(matchStatsCollection *MatchStatsCollection, filename string) error {
 
 	header := []string{"File", "Extra time", "Shootout"}
 	for i := 0; i < len(sslproto.GamePhaseType_name); i++ {
@@ -55,7 +55,7 @@ func WriteGamePhaseDurations(matchStatsCollection *sslproto.MatchStatsCollection
 	return writeCsv(header, records, filename)
 }
 
-func WriteTeamMetricsPerGame(matchStatsCollection *sslproto.MatchStatsCollection, filename string) error {
+func WriteTeamMetricsPerGame(matchStatsCollection *MatchStatsCollection, filename string) error {
 
 	header := []string{"File", "Team", "Scored Goals", "Conceded Goals", "Fouls", "Yellow Cards", "Red Cards", "Timeout Time", "Timeouts", "Penalty Shots", "Ball Placement Time", "Ball Placements", "Max active Yellow Cards"}
 
@@ -72,14 +72,14 @@ func WriteTeamMetricsPerGame(matchStatsCollection *sslproto.MatchStatsCollection
 	return writeCsv(header, records, filename)
 }
 
-func WriteTeamMetricsSum(matchStatsCollection *sslproto.MatchStatsCollection, filename string) error {
+func WriteTeamMetricsSum(matchStatsCollection *MatchStatsCollection, filename string) error {
 
 	header := []string{"Team", "Scored Goals", "Conceded Goals", "Fouls", "Yellow Cards", "Red Cards", "Timeout Time", "Timeouts", "Penalty Shots", "Ball Placement Time", "Ball Placements", "Max active Yellow Cards"}
 
-	teams := map[string]*sslproto.TeamStats{}
+	teams := map[string]*TeamStats{}
 	for _, matchStats := range matchStatsCollection.MatchStats {
-		teams[matchStats.TeamStatsYellow.Name] = &sslproto.TeamStats{Name: matchStats.TeamStatsYellow.Name}
-		teams[matchStats.TeamStatsBlue.Name] = &sslproto.TeamStats{Name: matchStats.TeamStatsBlue.Name}
+		teams[matchStats.TeamStatsYellow.Name] = &TeamStats{Name: matchStats.TeamStatsYellow.Name}
+		teams[matchStats.TeamStatsBlue.Name] = &TeamStats{Name: matchStats.TeamStatsBlue.Name}
 	}
 
 	for _, matchStats := range matchStatsCollection.MatchStats {
@@ -102,7 +102,7 @@ func WriteTeamMetricsSum(matchStatsCollection *sslproto.MatchStatsCollection, fi
 	return writeCsv(header, records, filename)
 }
 
-func WriteGamePhases(matchStatsCollection *sslproto.MatchStatsCollection, filename string) error {
+func WriteGamePhases(matchStatsCollection *MatchStatsCollection, filename string) error {
 	header := []string{
 		"File",
 		"Type",
@@ -174,7 +174,7 @@ func WriteGamePhases(matchStatsCollection *sslproto.MatchStatsCollection, filena
 	return writeCsv(header, records, filename)
 }
 
-func addTeamStats(to *sslproto.TeamStats, team *sslproto.TeamStats) {
+func addTeamStats(to *TeamStats, team *TeamStats) {
 	to.Goals += team.Goals
 	to.ConcededGoals += team.ConcededGoals
 	to.Fouls += team.Fouls
@@ -190,7 +190,7 @@ func addTeamStats(to *sslproto.TeamStats, team *sslproto.TeamStats) {
 	}
 }
 
-func teamNumbers(stats *sslproto.TeamStats) []string {
+func teamNumbers(stats *TeamStats) []string {
 	return []string{
 		stats.Name,
 		uintToStr(stats.Goals),

@@ -1,7 +1,6 @@
 package matchstats
 
 import (
-	"github.com/RoboCup-SSL/ssl-go-tools/pkg/sslproto"
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/golang/protobuf/proto"
 	"github.com/pkg/errors"
@@ -10,13 +9,13 @@ import (
 )
 
 type Aggregator struct {
-	Collection sslproto.MatchStatsCollection
+	Collection MatchStatsCollection
 }
 
 func NewAggregator() *Aggregator {
 	generator := new(Aggregator)
-	generator.Collection = sslproto.MatchStatsCollection{}
-	generator.Collection.MatchStats = []*sslproto.MatchStats{}
+	generator.Collection = MatchStatsCollection{}
+	generator.Collection.MatchStats = []*MatchStats{}
 	return generator
 }
 

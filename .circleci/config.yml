@@ -3,7 +3,7 @@ jobs:
   tools:
     docker:
     - image: circleci/golang:1.13
-    working_directory: /go/src/github.com/RoboCup-SSL/ssl-go-tools
+    working_directory: /go/src/github.com/RoboCup-SSL/ssl-match-stats
     steps:
     - checkout
     - attach_workspace:

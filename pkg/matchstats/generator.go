@@ -29,14 +29,14 @@ func NewGenerator() *Generator {
 	return generator
 }
 
-func (m *Generator) Process(filename string) (*sslproto.MatchStats, error) {
+func (m *Generator) Process(filename string) (*MatchStats, error) {
 
 	logReader, err := persistence.NewReader(filename)
 	if err != nil {
 		return nil, errors.Wrap(err, "Could not read file")
 	}
 
-	matchStats := new(sslproto.MatchStats)
+	matchStats := new(MatchStats)
 	matchStats.Name = filepath.Base(filename)
 	var lastRefereeMsg *sslproto.Referee
 
@@ -78,26 +78,26 @@ func (m *Generator) Process(filename string) (*sslproto.MatchStats, error) {
 	return matchStats, logReader.Close()
 }
 
-func (m *Generator) OnNewStage(matchStats *sslproto.MatchStats, referee *sslproto.Referee) {
+func (m *Generator) OnNewStage(matchStats *MatchStats, referee *sslproto.Referee) {
 	m.metaDataProcessor.OnNewStage(matchStats, referee)
 	m.gamePhaseDetector.OnNewStage(matchStats, referee)
 }
 
-func (m *Generator) OnNewCommand(matchStats *sslproto.MatchStats, referee *sslproto.Referee) {
+func (m *Generator) OnNewCommand(matchStats *MatchStats, referee *sslproto.Referee) {
 	m.metaDataProcessor.OnNewCommand(matchStats, referee)
 	m.gamePhaseDetector.OnNewCommand(matchStats, referee)
 }
 
-func (m *Generator) OnFirstRefereeMessage(matchStats *sslproto.MatchStats, referee *sslproto.Referee) {
+func (m *Generator) OnFirstRefereeMessage(matchStats *MatchStats, referee *sslproto.Referee) {
 	m.metaDataProcessor.OnFirstRefereeMessage(matchStats, referee)
 }
 
-func (m *Generator) OnLastRefereeMessage(matchStats *sslproto.MatchStats, referee *sslproto.Referee) {
+func (m *Generator) OnLastRefereeMessage(matchStats *MatchStats, referee *sslproto.Referee) {
 	m.metaDataProcessor.OnLastRefereeMessage(matchStats, referee)
 	m.gamePhaseDetector.OnLastRefereeMessage(matchStats, referee)
 }
 
-func (m *Generator) OnNewRefereeMessage(matchStats *sslproto.MatchStats, referee *sslproto.Referee) {
+func (m *Generator) OnNewRefereeMessage(matchStats *MatchStats, referee *sslproto.Referee) {
 	m.metaDataProcessor.OnNewRefereeMessage(matchStats, referee)
 }
 
