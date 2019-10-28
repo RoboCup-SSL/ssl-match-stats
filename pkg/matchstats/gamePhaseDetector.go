@@ -26,7 +26,7 @@ func (d *GamePhaseDetector) startNewPhase(matchStats *MatchStats, referee *sslpr
 	}
 	d.currentPhase.CommandEntry = mapProtoCommandToCommand(*referee.Command)
 	d.currentPhase.ForTeam = mapProtoCommandToTeam(*referee.Command)
-	d.currentPhase.GameEventsEntry = referee.GameEvents
+	d.currentPhase.GameEventsEntry = removePlacementSucceeded(referee.GameEvents)
 
 	if prevPhase != nil {
 		d.currentPhase.CommandPrev = prevPhase.CommandEntry
@@ -37,6 +37,15 @@ func (d *GamePhaseDetector) startNewPhase(matchStats *MatchStats, referee *sslpr
 	if d.currentPhase.CommandEntry.Type == CommandType_COMMAND_UNKNOWN {
 		log.Println("Warn")
 	}
+}
+
+func removePlacementSucceeded(events []*sslproto.GameEvent) (ret []*sslproto.GameEvent) {
+	for _, s := range events {
+		if *s.Type != sslproto.GameEventType_PLACEMENT_SUCCEEDED {
+			ret = append(ret, s)
+		}
+	}
+	return
 }
 
 func (d *GamePhaseDetector) stopCurrentPhase(matchStats *MatchStats, referee *sslproto.Referee) {

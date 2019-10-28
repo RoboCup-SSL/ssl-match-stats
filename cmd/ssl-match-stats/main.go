@@ -77,6 +77,9 @@ func exportCsv() {
 	if err := csvexport.WriteGamePhases(&a.Collection, "game-phases.csv"); err != nil {
 		log.Fatal(err)
 	}
+	if err := csvexport.WriteGameEventDurationStats(&a.Collection, "game-event-durations.csv"); err != nil {
+		log.Fatal(err)
+	}
 }
 
 func usage() {
