@@ -18,9 +18,9 @@ func (a *Aggregator) AggregateGamePhases() error {
 		for _, phase := range matchStats.GamePhases {
 			phaseName := (*phase).Type.String()
 			a.Collection.GamePhaseDurations[phaseName].Duration += phase.Duration
+			a.Collection.GamePhaseDurations[phaseName].Count += 1
 			durations[phaseName] = append(durations[phaseName], int(phase.Duration))
 		}
-
 	}
 
 	for _, phaseName := range GamePhaseType_name {

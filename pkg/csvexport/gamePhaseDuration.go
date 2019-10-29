@@ -27,7 +27,7 @@ func WriteGamePhaseDurations(matchStatsCollection *matchstats.MatchStatsCollecti
 
 func WriteGamePhaseDurationStats(matchStatsCollection *matchstats.MatchStatsCollection, filename string) error {
 
-	header := []string{"File", "Phase", "Extra time", "Shootout", "Duration Sum", "Min Duration", "Median Duration", "Avg Duration", "Max Duration"}
+	header := []string{"File", "Phase", "Extra time", "Shootout", "Duration Sum", "Min Duration", "Median Duration", "Avg Duration", "Max Duration", "Count"}
 
 	var records [][]string
 	for _, matchStats := range matchStatsCollection.MatchStats {
@@ -44,6 +44,7 @@ func WriteGamePhaseDurationStats(matchStatsCollection *matchstats.MatchStatsColl
 				uintToStr(matchStats.GamePhaseDurations[phaseName].DurationMedian),
 				uintToStr(uint32(math.Round(float64(matchStats.GamePhaseDurations[phaseName].DurationAvg)))),
 				uintToStr(matchStats.GamePhaseDurations[phaseName].DurationMax),
+				uintToStr(matchStats.GamePhaseDurations[phaseName].Count),
 			}
 			records = append(records, record)
 		}
@@ -54,7 +55,7 @@ func WriteGamePhaseDurationStats(matchStatsCollection *matchstats.MatchStatsColl
 
 func WriteGamePhaseDurationStatsAggregated(matchStatsCollection *matchstats.MatchStatsCollection, filename string) error {
 
-	header := []string{"Phase", "Duration Sum", "Min Duration", "Median Duration", "Avg Duration", "Max Duration"}
+	header := []string{"Phase", "Duration Sum", "Min Duration", "Median Duration", "Avg Duration", "Max Duration", "Count"}
 
 	var records [][]string
 	for _, phaseName := range matchstats.GamePhaseType_name {
@@ -65,6 +66,7 @@ func WriteGamePhaseDurationStatsAggregated(matchStatsCollection *matchstats.Matc
 			uintToStr(matchStatsCollection.GamePhaseDurations[phaseName].DurationMedian),
 			uintToStr(uint32(math.Round(float64(matchStatsCollection.GamePhaseDurations[phaseName].DurationAvg)))),
 			uintToStr(matchStatsCollection.GamePhaseDurations[phaseName].DurationMax),
+			uintToStr(matchStatsCollection.GamePhaseDurations[phaseName].Count),
 		}
 		records = append(records, record)
 	}

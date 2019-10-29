@@ -114,6 +114,7 @@ func AggregateGamePhaseStats(matchStats *MatchStats) {
 	for _, phase := range matchStats.GamePhases {
 		phaseName := (*phase).Type.String()
 		matchStats.GamePhaseDurations[phaseName].Duration += phase.Duration
+		matchStats.GamePhaseDurations[phaseName].Count += 1
 		durations[phaseName] = append(durations[phaseName], int(phase.Duration))
 	}
 
@@ -158,6 +159,7 @@ func AggregateGameEvents(matchStats *MatchStats) {
 		primaryEvent := phase.GameEventsEntry[0]
 		eventName := primaryEvent.Type.String()
 		matchStats.GameEventDurations[eventName].Duration += phase.Duration
+		matchStats.GameEventDurations[eventName].Count += 1
 		durations[eventName] = append(durations[eventName], int(phase.Duration))
 	}
 

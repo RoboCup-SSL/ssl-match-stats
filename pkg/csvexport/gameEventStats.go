@@ -8,7 +8,7 @@ import (
 
 func WriteGameEventDurationStats(matchStatsCollection *matchstats.MatchStatsCollection, filename string) error {
 
-	header := []string{"File", "Game Event", "Duration Sum", "Min Duration", "Median Duration", "Avg Duration", "Max Duration"}
+	header := []string{"File", "Game Event", "Duration Sum", "Min Duration", "Median Duration", "Avg Duration", "Max Duration", "Count"}
 
 	var records [][]string
 	for _, matchStats := range matchStatsCollection.MatchStats {
@@ -21,6 +21,7 @@ func WriteGameEventDurationStats(matchStatsCollection *matchstats.MatchStatsColl
 				uintToStr(matchStats.GameEventDurations[eventName].DurationMedian),
 				uintToStr(uint32(math.Round(float64(matchStats.GameEventDurations[eventName].DurationAvg)))),
 				uintToStr(matchStats.GameEventDurations[eventName].DurationMax),
+				uintToStr(matchStats.GameEventDurations[eventName].Count),
 			}
 			records = append(records, record)
 		}
@@ -31,7 +32,7 @@ func WriteGameEventDurationStats(matchStatsCollection *matchstats.MatchStatsColl
 
 func WriteGameEventDurationStatsAggregated(matchStatsCollection *matchstats.MatchStatsCollection, filename string) error {
 
-	header := []string{"Game Event", "Duration Sum", "Min Duration", "Median Duration", "Avg Duration", "Max Duration"}
+	header := []string{"Game Event", "Duration Sum", "Min Duration", "Median Duration", "Avg Duration", "Max Duration", "Count"}
 
 	var records [][]string
 	for _, eventName := range sslproto.GameEventType_name {
@@ -42,6 +43,7 @@ func WriteGameEventDurationStatsAggregated(matchStatsCollection *matchstats.Matc
 			uintToStr(matchStatsCollection.GameEventDurations[eventName].DurationMedian),
 			uintToStr(uint32(math.Round(float64(matchStatsCollection.GameEventDurations[eventName].DurationAvg)))),
 			uintToStr(matchStatsCollection.GameEventDurations[eventName].DurationMax),
+			uintToStr(matchStatsCollection.GameEventDurations[eventName].Count),
 		}
 		records = append(records, record)
 	}

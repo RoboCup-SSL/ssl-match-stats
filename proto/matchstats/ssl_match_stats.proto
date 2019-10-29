@@ -104,6 +104,7 @@ message DurationStats {
     uint32 duration_median = 4;
     uint32 duration_avg = 5;
     float duration_relative = 6;
+    uint32 count = 7;
 }
 
 message MatchStats {

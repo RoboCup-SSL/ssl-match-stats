@@ -24,6 +24,7 @@ func (a *Aggregator) AggregateGameEvents() error {
 			primaryEvent := phase.GameEventsEntry[0]
 			eventName := primaryEvent.Type.String()
 			a.Collection.GameEventDurations[eventName].Duration += phase.Duration
+			a.Collection.GameEventDurations[eventName].Count += 1
 			durations[eventName] = append(durations[eventName], int(phase.Duration))
 		}
 	}
