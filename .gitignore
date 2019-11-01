@@ -1,3 +1,9 @@
 *.log
 *.log.gz
+out.bin
+out.json
+
 .idea
+
+# ignore flyway.conf as it contains sensitive data
+flyway.conf
