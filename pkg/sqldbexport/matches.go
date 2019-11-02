@@ -31,6 +31,10 @@ func (p *SqlDbExporter) WriteMatches(matchStatsCollection *matchstats.MatchStats
 			matchId = new(uuid.UUID)
 			*matchId = uuid.New()
 		}
+		startTimeSec := int64(matchStats.StartTime / 1000000)
+		startTimeNsec := (int64(matchStats.StartTime) - (startTimeSec * 1000000)) * 1000
+		startTime := time.Unix(startTimeSec, startTimeNsec)
+
 		if _, err := p.db.Exec(
 			`INSERT INTO matches 
 						(
@@ -54,7 +58,7 @@ func (p *SqlDbExporter) WriteMatches(matchStatsCollection *matchstats.MatchStats
 			logFileName,
 			tournamentId,
 			division,
-			nil, // TODO
+			startTime,
 			time.Duration(matchStats.MatchDuration*1000).Seconds()*1000,
 			matchStats.ExtraTime,
 			matchStats.Shootout,
@@ -128,8 +132,8 @@ func (p *SqlDbExporter) insertTeamStats(matchId *uuid.UUID, teamStats *matchstat
 		teamStats.YellowCards,
 		teamStats.RedCards,
 		time.Duration(teamStats.TimeoutTime*1000).Seconds()*1000,
-		teamStats.Timeouts,
-		nil, // TODO
+		teamStats.TimeoutsTaken,
+		teamStats.TimeoutsLeft,
 		time.Duration(teamStats.BallPlacementTime*1000).Seconds()*1000,
 		teamStats.BallPlacements,
 		teamStats.MaxActiveYellowCards,

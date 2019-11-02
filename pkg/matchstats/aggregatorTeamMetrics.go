@@ -22,7 +22,8 @@ func addTeamStats(to *TeamStats, team *TeamStats) {
 	to.YellowCards += team.YellowCards
 	to.RedCards += team.RedCards
 	to.TimeoutTime += team.TimeoutTime
-	to.Timeouts += team.Timeouts
+	to.TimeoutsLeft += team.TimeoutsLeft
+	to.TimeoutsTaken += team.TimeoutsTaken
 	to.PenaltyShotsTotal += team.PenaltyShotsTotal
 	to.BallPlacementTime += team.BallPlacementTime
 	to.BallPlacements += team.BallPlacements

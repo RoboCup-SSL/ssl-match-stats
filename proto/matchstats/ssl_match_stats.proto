@@ -88,7 +88,8 @@ message TeamStats {
     uint32 yellow_cards = 4;
     uint32 red_cards = 5;
     uint32 timeout_time = 6;
-    uint32 timeouts = 7;
+    uint32 timeouts_taken = 7;
+    uint32 timeouts_left = 14;
     uint32 penalty_shots_total = 8;
     uint32 penalty_shots_success = 9;
     uint32 conceded_goals = 10;
@@ -110,6 +111,7 @@ message DurationStats {
 message MatchStats {
     string name = 1;
     uint32 match_duration = 2;
+    uint64 start_time = 10;
     repeated GamePhase game_phases = 3;
     bool extra_time = 4;
     bool shootout = 5;

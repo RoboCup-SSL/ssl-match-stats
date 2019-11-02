@@ -16,7 +16,7 @@ create table matches
     tournament_id_fk uuid references tournaments (id),
     download_link    varchar(255),
     division         division,
-    start_time       date,
+    start_time       timestamp,
     duration         interval(3), -- millisecond precision
     extra_time       bool,
     shootout         bool

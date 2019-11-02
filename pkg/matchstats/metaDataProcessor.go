@@ -55,6 +55,7 @@ func (m *MetaDataProcessor) OnFirstRefereeMessage(matchStats *MatchStats, refere
 
 	matchStats.Shootout = false
 	m.startTime = packetTimeStampToTime(*referee.PacketTimestamp)
+	matchStats.StartTime = uint64(m.startTime.UnixNano() / 1000)
 }
 
 func (m *MetaDataProcessor) OnLastRefereeMessage(matchStats *MatchStats, referee *sslproto.Referee) {
@@ -95,7 +96,12 @@ func addTimeout(teamStats *TeamStats, teamInfo *sslproto.Referee_TeamInfo, avail
 		}
 	}
 	teamStats.TimeoutTime += availableTime - *teamInfo.TimeoutTime
-	teamStats.Timeouts += availableTimeouts - *teamInfo.Timeouts
+	teamStats.TimeoutsTaken += availableTimeouts - *teamInfo.Timeouts
+
+	// workaround for integer overflow (in the above case, the overflow cancels out)
+	if *teamInfo.Timeouts < 100 {
+		teamStats.TimeoutsLeft += *teamInfo.Timeouts
+	}
 }
 
 func (m *MetaDataProcessor) OnNewRefereeMessage(matchStats *MatchStats, referee *sslproto.Referee) {
