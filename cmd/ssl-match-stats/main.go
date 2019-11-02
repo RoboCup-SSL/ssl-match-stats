@@ -36,11 +36,11 @@ func main() {
 		log.Println("Failed to aggregate match stats", err)
 	}
 
-	if err := a.WriteBin("out.bin"); err != nil {
+	if err := a.WriteBin("match-stats.bin"); err != nil {
 		log.Println("Could not write binary file", err)
 	}
 
-	if err := a.WriteJson("out.json"); err != nil {
+	if err := a.WriteJson("match-stats.json"); err != nil {
 		log.Println("Could not write JSON file", err)
 	}
 }

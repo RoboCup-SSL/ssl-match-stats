@@ -16,7 +16,7 @@ func main() {
 
 	a := matchstats.NewAggregator()
 
-	if err := a.ReadBin("out.bin"); err != nil {
+	if err := a.ReadBin("match-stats.bin"); err != nil {
 		log.Fatal(err)
 	}
 

@@ -25,16 +25,42 @@ The executables are installed to your $GOPATH/bin folder. If you have it on your
 
 ## Usage
 
-The binary is called `ssl-match-stats`.
+### Generate Statistics
 
-### Generate statistics from log files
+The `ssl-match-stats` command will generate the statistics into an intermediate data structure `match-stats.{json|bin}`
+from which they can be exported. This must be done per tournament and division. 
 
-Pass in a list of log files to be processed: `ssl-match-stats -generate *.log.gz`
+The command takes a list of log files as input:
+```
+ssl-match-stats *.log.gz
+```
 
-### Export statistics to CSV files
+### Export Statistics to CSV files
 
-First, generate the statistics with the command above. This will produce a `out.json` and `out.bin` file.
+The generated statistics can be exported into CSV files for further processing, 
+for example with a spreadsheet software or Matlab. 
+The `ssl-match-stats-csv` command will read the `match-stats.bin` protobuf file 
+from the current folder and produces a set of CSV files: 
 
-Run: `ssl-match-stats -exportCsv`
+```
+ssl-match-stats-csv
+```
 
-This will generate `*.csv` files that you can import in your favorite tool, like a spreadsheet tool.
+### Export Statistics to a Database
+
+The generated statistics can be exported into a PostgreSQL database (other DBs not yet tested).
+This is useful if you want to apply some BI (Business Intelligence) application on the data.
+
+See [Setup for Match Stats DB](./setup/matchStatsDb/README.md) for instructions on setting up the database.
+
+See [Setup for Metabase](./setup/metabase/README.md) for instructions on setting up Metabase, an open-source BI software.
+
+The command requires some parameters:
+
+* tournament: A unique name for the tournament of the log files, for example 'RoboCup2019'
+* division: The division of the log files, one of: 'DivA', 'DivB', 'none'
+* sqlDbSource: A connection string to the target database
+
+```
+ssl-match-stats-db -sqlDbSource postgres://user:password@host:port/db-name -tournament RoboCup2019 -division DivA
+```
