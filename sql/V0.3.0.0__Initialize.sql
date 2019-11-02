@@ -23,7 +23,7 @@ create table matches
 );
 
 -- custom enum for team colors
-create type team_color as enum ('yellow', 'blue', 'neutral');
+create type team_color as enum ('UNKNOWN', 'YELLOW', 'BLUE', 'NONE');
 
 -- statistics of a single match from the perspective of a single team -> two rows per match
 create table team_match_stats
@@ -50,65 +50,72 @@ create table team_match_stats
 
 -- custom type for game phases (as derived from a stream of referee messages)
 create type game_phase as enum (
-    'running',
-    'prepare_kickoff',
-    'prepare_penalty',
-    'stop',
-    'ball_placement',
-    'timeout',
-    'break',
-    'halt'
+    'UNKNOWN',
+    'RUNNING',
+    'PREPARE_KICKOFF',
+    'PREPARE_PENALTY',
+    'STOP',
+    'BALL_PLACEMENT',
+    'TIMEOUT',
+    'BREAK',
+    'HALT'
     );
 
 -- custom type for referee commands from referee messages
 create type command as enum (
-    'halt',
-    'stop',
-    'ball_placement',
-    'normal_start',
-    'force_start',
-    'direct_free',
-    'indirect_free',
-    'prepare_kickoff',
-    'prepare_penalty',
-    'timeout',
-    'goal'
+    'UNKNOWN',
+    'HALT',
+    'STOP',
+    'BALL_PLACEMENT',
+    'NORMAL_START',
+    'FORCE_START',
+    'DIRECT_FREE',
+    'INDIRECT_FREE',
+    'PREPARE_KICKOFF',
+    'PREPARE_PENALTY',
+    'TIMEOUT',
+    'GOAL'
     );
 
 -- custom type for stages from referee messages
 create type stage as enum (
-    'normal_first_half_pre',
-    'normal_first_half',
-    'normal_half_time',
-    'normal_second_half_pre',
-    'normal_second_half',
-    'extra_time_break',
-    'extra_first_half_pre',
-    'extra_first_half',
-    'extra_half_time',
-    'extra_second_half_pre',
-    'extra_second_half',
-    'penalty_shootout_break',
-    'penalty_shootout'
+    'UNKNOWN',
+    'NORMAL_FIRST_HALF_PRE',
+    'NORMAL_FIRST_HALF',
+    'NORMAL_HALF_TIME',
+    'NORMAL_SECOND_HALF_PRE',
+    'NORMAL_SECOND_HALF',
+    'EXTRA_TIME_BREAK',
+    'EXTRA_FIRST_HALF_PRE',
+    'EXTRA_FIRST_HALF',
+    'EXTRA_HALF_TIME',
+    'EXTRA_SECOND_HALF_PRE',
+    'EXTRA_SECOND_HALF',
+    'PENALTY_SHOOTOUT_BREAK',
+    'PENALTY_SHOOTOUT'
     );
 
 -- derived game phases from a stream of referee messages
 create table game_phases
 (
-    id                    uuid primary key,
-    match_id_fk           uuid references matches (id),
-    start_time            timestamp,
-    end_time              timestamp,
-    duration              interval(3), -- millisecond precision
-    type                  game_phase,
-    for_team              team_color,
-    entry_command         command,
-    exit_command          command,
-    proposed_next_command command,
-    previous_command      command,
-    stage                 stage,
-    stage_time_left_entry interval(3), -- millisecond precision
-    stage_time_left_exit  interval(3)  -- millisecond precision
+    id                             uuid primary key,
+    match_id_fk                    uuid references matches (id),
+    start_time                     timestamp,
+    end_time                       timestamp,
+    duration                       interval(3), -- millisecond precision
+    type                           game_phase,
+    for_team                       team_color,
+    entry_command                  command,
+    entry_command_for_team         team_color,
+    exit_command                   command,
+    exit_command_for_team          team_color,
+    proposed_next_command          command,
+    proposed_next_command_for_team team_color,
+    previous_command               command,
+    previous_command_for_team      team_color,
+    stage                          stage,
+    stage_time_left_entry          interval(3), -- millisecond precision
+    stage_time_left_exit           interval(3)  -- millisecond precision
 );
 
 -- grant read access to view user
