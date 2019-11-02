@@ -13,11 +13,23 @@ func main() {
 	flag.Usage = usage
 
 	sqlDriver := flag.String("sqlDriver", "postgres", "SQL driver")
-	sqlDbSource := flag.String("sqlDbSource", "postgres://user:password@host:port/ssl_match_stats", "SQL connection string")
-
-	//tournament := flag.String("tournament", "", "The tournament the log files are for")
+	sqlDbSource := flag.String("sqlDbSource", "", "SQL connection string, for example: postgres://user:password@host:port/ssl_match_stats")
+	tournament := flag.String("tournament", "", "The tournament the log files are from")
+	division := flag.String("division", "", "The division of the log files. Should be one of: DivA, DivB, none")
 
 	flag.Parse()
+
+	if len(*sqlDbSource) == 0 {
+		log.Fatal("You have to specify a db source")
+	}
+	if len(*tournament) == 0 {
+		log.Fatal("You have to specify the tournament name")
+	}
+	if len(*division) == 0 {
+		log.Fatal("You have to specify the division")
+	} else if !validDivision(*division) {
+		log.Fatal("The division must be one of: DivA, DivB or none")
+	}
 
 	exporter := sqldbexport.SqlDbExporter{}
 	if err := exporter.Connect(*sqlDriver, *sqlDbSource); err != nil {
@@ -30,12 +42,24 @@ func main() {
 		log.Fatal(err)
 	}
 
-	if err := exporter.WriteLogFiles(&a.Collection); err != nil {
-		log.Fatal("Could not write log files: ", err)
+	tournamentId, err := exporter.AddTournamentIfNotPresent(*tournament)
+	if err != nil {
+		log.Fatal(err)
 	}
-	if err := exporter.WriteTeamStats(&a.Collection); err != nil {
-		log.Fatal("Could not write team stats: ", err)
+
+	if err := exporter.WriteMatches(&a.Collection, tournamentId, *division); err != nil {
+		log.Fatal("Could not write matches: ", err)
 	}
+}
+
+func validDivision(s string) bool {
+	validValues := []string{"DivA", "DivB", "none"}
+	for _, validValue := range validValues {
+		if validValue == s {
+			return true
+		}
+	}
+	return false
 }
 
 func usage() {

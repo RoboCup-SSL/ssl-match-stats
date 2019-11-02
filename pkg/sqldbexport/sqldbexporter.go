@@ -3,10 +3,11 @@ package sqldbexport
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"github.com/RoboCup-SSL/ssl-match-stats/pkg/matchstats"
 	"github.com/google/uuid"
+	"github.com/pkg/errors"
 	"log"
+	"time"
 
 	_ "github.com/lib/pq"
 )
@@ -26,70 +27,90 @@ func (p *SqlDbExporter) Connect(driver string, dataSourceName string) error {
 	return nil
 }
 
-func (p *SqlDbExporter) FindLogFileId(logFileName string) *uuid.UUID {
+func (p *SqlDbExporter) FindMatchId(logFileName string) *uuid.UUID {
 	id := new(uuid.UUID)
 	err := p.db.QueryRow(
-		"SELECT id FROM log_files WHERE file_name=$1",
+		"SELECT id FROM matches WHERE file_name=$1",
 		logFileName).Scan(id)
 	if err == sql.ErrNoRows {
 		return nil
 	}
 	if err != nil {
-		log.Print("Could not query log_files:", err)
+		log.Print("Could not query matches:", err)
 	}
 	return id
 }
 
-func (p *SqlDbExporter) WriteLogFiles(matchStatsCollection *matchstats.MatchStatsCollection) error {
+func (p *SqlDbExporter) WriteMatches(matchStatsCollection *matchstats.MatchStatsCollection, tournamentId *uuid.UUID, division string) error {
 	for _, matchStats := range matchStatsCollection.MatchStats {
 		logFileName := matchStats.Name
-		id := p.FindLogFileId(logFileName)
-		if id == nil {
-			id = new(uuid.UUID)
-			*id = uuid.New()
-			if _, err := p.db.Exec(
-				"INSERT INTO log_files (id, file_name) VALUES ($1, $2)",
-				id,
-				logFileName,
-			); err != nil {
-				return err
-			}
+		matchId := p.FindMatchId(logFileName)
+		if matchId == nil {
+			matchId = new(uuid.UUID)
+			*matchId = uuid.New()
+		}
+		if _, err := p.db.Exec(
+			`INSERT INTO matches 
+						(
+							id, 
+							file_name, 
+							tournament_id_fk, 
+							division,
+							start_time,
+							duration,
+							extra_time,
+							shootout
+						) 
+						VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+						ON CONFLICT ON CONSTRAINT matches_pkey DO UPDATE SET
+							division=excluded.division,
+							start_time=excluded.start_time,
+							duration=excluded.duration,
+							extra_time=excluded.extra_time,
+							shootout=excluded.shootout`,
+			matchId,
+			logFileName,
+			tournamentId,
+			division,
+			nil, // TODO
+			time.Duration(matchStats.MatchDuration*1000).Seconds()*1000,
+			matchStats.ExtraTime,
+			matchStats.Shootout,
+		); err != nil {
+			return errors.Wrap(err, "Could not insert match")
+		}
+
+		if err := p.WriteTeamStats(matchStats, matchId); err != nil {
+			return errors.Wrap(err, "Could not insert team stats")
 		}
 	}
 	return nil
 }
 
-func (p *SqlDbExporter) WriteTeamStats(matchStatsCollection *matchstats.MatchStatsCollection) error {
-	for _, matchStats := range matchStatsCollection.MatchStats {
-		logFileName := matchStats.Name
-		logFileId := p.FindLogFileId(logFileName)
-		if logFileId == nil {
-			return errors.New("Could not find log file in DB: " + logFileName)
-		}
-		if err := p.insertTeamStats(logFileId, matchStats.TeamStatsYellow, "yellow", matchStats.TeamStatsBlue.Name); err != nil {
-			return err
-		}
-		if err := p.insertTeamStats(logFileId, matchStats.TeamStatsBlue, "blue", matchStats.TeamStatsYellow.Name); err != nil {
-			return err
-		}
+func (p *SqlDbExporter) WriteTeamStats(matchStats *matchstats.MatchStats, matchId *uuid.UUID) error {
+	if err := p.insertTeamStats(matchId, matchStats.TeamStatsYellow, "yellow", matchStats.TeamStatsBlue.Name); err != nil {
+		return err
+	}
+	if err := p.insertTeamStats(matchId, matchStats.TeamStatsBlue, "blue", matchStats.TeamStatsYellow.Name); err != nil {
+		return err
 	}
 	return nil
 }
 
-func (p *SqlDbExporter) insertTeamStats(logFileId *uuid.UUID, teamStats *matchstats.TeamStats, teamColor string, opponent string) error {
+func (p *SqlDbExporter) insertTeamStats(matchId *uuid.UUID, teamStats *matchstats.TeamStats, teamColor string, opponent string) error {
 
 	_, err := p.db.Exec(
-		`INSERT INTO matches (
+		`INSERT INTO team_match_stats (
                      id, 
-                     log_file_id_fk, 
+                     match_id_fk, 
                      team_color, 
                      team_name,
                      opponent_name,
                      goals,
-                     goals_conceded,
+                     conceded_goals,
                      fouls,
-                     cards_yellow,
-                     cards_red,
+                     yellow_cards,
+                     red_cards,
                      timeout_time,
                      timeouts_taken,
                      timeouts_left,
@@ -99,14 +120,14 @@ func (p *SqlDbExporter) insertTeamStats(logFileId *uuid.UUID, teamStats *matchst
                      penalty_shots_total
                      ) 
 				VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
-				ON CONFLICT ON CONSTRAINT unique_log_file DO UPDATE SET
+				ON CONFLICT ON CONSTRAINT unique_match DO UPDATE SET
 					  team_name=excluded.team_name,
 					  opponent_name=excluded.opponent_name,
 					  goals=excluded.goals,
-					  goals_conceded=excluded.goals_conceded,
+					  conceded_goals=excluded.conceded_goals,
 					  fouls=excluded.fouls,
-					  cards_yellow=excluded.cards_yellow,
-					  cards_red=excluded.cards_red,
+					  yellow_cards=excluded.yellow_cards,
+					  red_cards=excluded.red_cards,
 					  timeout_time=excluded.timeout_time,
 					  timeouts_taken=excluded.timeouts_taken,
 					  timeouts_left=excluded.timeouts_left,
@@ -115,7 +136,7 @@ func (p *SqlDbExporter) insertTeamStats(logFileId *uuid.UUID, teamStats *matchst
 					  max_active_yellow_cards=excluded.max_active_yellow_cards,
 					  penalty_shots_total=excluded.penalty_shots_total`,
 		uuid.New(),
-		logFileId,
+		matchId,
 		teamColor,
 		teamStats.Name,
 		opponent,
@@ -124,10 +145,10 @@ func (p *SqlDbExporter) insertTeamStats(logFileId *uuid.UUID, teamStats *matchst
 		teamStats.Fouls,
 		teamStats.YellowCards,
 		teamStats.RedCards,
-		teamStats.TimeoutTime,
+		time.Duration(teamStats.TimeoutTime*1000).Seconds()*1000,
 		teamStats.Timeouts,
 		nil, // TODO
-		teamStats.BallPlacementTime,
+		time.Duration(teamStats.BallPlacementTime*1000).Seconds()*1000,
 		teamStats.BallPlacements,
 		teamStats.MaxActiveYellowCards,
 		teamStats.PenaltyShotsTotal,
