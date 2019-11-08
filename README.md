@@ -64,3 +64,17 @@ The command requires some parameters:
 ```
 ssl-match-stats-db -sqlDbSource postgres://user:password@host:port/db-name -tournament RoboCup2019 -division DivA
 ```
+
+## Development
+
+### Database
+
+A docker-compose config is provided to startup a postgres DB. To start, run:
+```shell script
+docker-compose up
+```
+The database connection string is: `postgres://ssl_match_stats:ssl_match_stats@localhost:5432/ssl_match_stats?sslmode=disable`
+
+The database schema will automatically be installed with flyway. 
+Data will be stored in a volume, so it is not lost when stopping docker-compose.
+To reset the database, run `docker-compose down`.
