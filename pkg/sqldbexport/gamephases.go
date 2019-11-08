@@ -29,6 +29,8 @@ func (p *SqlDbExporter) insertGamePhase(gamePhase *matchstats.GamePhase, matchId
 		*nextCommandForTeam = gamePhase.NextCommandProposed.ForTeam.String()[5:]
 	}
 
+	id := uuid.New()
+
 	_, err := p.db.Exec(
 		`INSERT INTO game_phases (
                      id, 
@@ -51,7 +53,7 @@ func (p *SqlDbExporter) insertGamePhase(gamePhase *matchstats.GamePhase, matchId
 					 stage_time_left_exit
                      ) 
 				VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)`,
-		uuid.New(),
+		id,
 		matchId,
 		convertTime(gamePhase.StartTime),
 		convertTime(gamePhase.EndTime),
@@ -70,5 +72,8 @@ func (p *SqlDbExporter) insertGamePhase(gamePhase *matchstats.GamePhase, matchId
 		convertDuration(uint32(gamePhase.StageTimeLeftEntry)),
 		convertDuration(uint32(gamePhase.StageTimeLeftExit)),
 	)
+
+	p.WriteGameEvents(gamePhase.GameEventsTimed, id)
+
 	return err
 }

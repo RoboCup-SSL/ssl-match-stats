@@ -3,6 +3,7 @@ package matchstats
 import (
 	"github.com/RoboCup-SSL/ssl-go-tools/pkg/sslproto"
 	"log"
+	"reflect"
 )
 
 type GamePhaseDetector struct {
@@ -99,6 +100,40 @@ func (d *GamePhaseDetector) OnNewCommand(matchStats *MatchStats, referee *sslpro
 
 func (d *GamePhaseDetector) OnLastRefereeMessage(matchStats *MatchStats, referee *sslproto.Referee) {
 	d.stopCurrentPhase(matchStats, referee)
+}
+
+func (d *GamePhaseDetector) OnNewRefereeMessage(matchStats *MatchStats, referee *sslproto.Referee) {
+
+	for _, presentGameEvent := range d.currentPhase.GameEventsTimed {
+		if !containsGameEvent(presentGameEvent.GameEvent, referee.GameEvents) {
+			presentGameEvent.Withdrawn = true
+		}
+	}
+
+	for _, presentGameEvent := range referee.GameEvents {
+		if !containsGameEventTimed(presentGameEvent, d.currentPhase.GameEventsTimed) {
+			gameEventTimed := GameEventTimed{GameEvent: presentGameEvent, Timestamp: *referee.PacketTimestamp, Withdrawn: false}
+			d.currentPhase.GameEventsTimed = append(d.currentPhase.GameEventsTimed, &gameEventTimed)
+		}
+	}
+}
+
+func containsGameEventTimed(gameEvent *sslproto.GameEvent, gameEvents []*GameEventTimed) bool {
+	for _, existingEvent := range gameEvents {
+		if reflect.DeepEqual(existingEvent.GameEvent, gameEvent) {
+			return true
+		}
+	}
+	return false
+}
+
+func containsGameEvent(gameEvent *sslproto.GameEvent, gameEvents []*sslproto.GameEvent) bool {
+	for _, existingEvent := range gameEvents {
+		if reflect.DeepEqual(existingEvent, gameEvent) {
+			return true
+		}
+	}
+	return false
 }
 
 func mapProtoCommandToCommand(command sslproto.Referee_Command) *Command {

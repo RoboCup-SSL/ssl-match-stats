@@ -79,6 +79,13 @@ message GamePhase {
     sint32 stage_time_left_exit = 13;
 
     Command command_prev = 14;
+    repeated GameEventTimed game_events_timed = 15;
+}
+
+message GameEventTimed {
+    GameEvent game_event = 1;
+    uint64 timestamp = 2;
+    bool withdrawn = 3;
 }
 
 message TeamStats {

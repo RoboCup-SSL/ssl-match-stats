@@ -94,6 +94,7 @@ func (m *Generator) OnLastRefereeMessage(matchStats *MatchStats, referee *sslpro
 
 func (m *Generator) OnNewRefereeMessage(matchStats *MatchStats, referee *sslproto.Referee) {
 	m.metaDataProcessor.OnNewRefereeMessage(matchStats, referee)
+	m.gamePhaseDetector.OnNewRefereeMessage(matchStats, referee)
 }
 
 func packetTimeStampToTime(packetTimestamp uint64) time.Time {
