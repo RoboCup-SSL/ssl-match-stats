@@ -1,0 +1,17 @@
+version: '3'
+services:
+  db:
+    image: "postgres:9.6.3"
+    environment:
+      - POSTGRES_USER=ssl_match_stats
+      - POSTGRES_PASSWORD=ssl_match_stats
+    ports:
+      - "5432:5432"
+
+  flyway:
+    image: "flyway/flyway:6.0.8"
+    command: -url=jdbc:postgresql://db:5432/ssl_match_stats -schemas=public -user=ssl_match_stats -password=ssl_match_stats -connectRetries=60 migrate
+    volumes:
+      - ./sql:/flyway/sql
+    depends_on:
+      - db

@@ -119,6 +119,9 @@ create table game_phases
 );
 
 -- grant read access to view user
+create user ssl_match_stats_view with encrypted password 'ssl_match_stats_view';
+grant usage on schema public to ssl_match_stats_view;
+
 grant select on table tournaments to ssl_match_stats_view;
 grant select on table matches to ssl_match_stats_view;
 grant select on table team_match_stats to ssl_match_stats_view;
