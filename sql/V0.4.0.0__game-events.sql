@@ -53,18 +53,18 @@ create table auto_refs
 create table game_events
 (
     id               uuid primary key,
-    game_phase_id_fk uuid references game_phases (id),
+    game_phase_id_fk uuid references game_phases (id) on delete cascade,
     type             game_event,
     timestamp        timestamp,
     withdrawn        bool,
     payload          jsonb
 );
 
--- mapping between game events and autoRefs
+-- mapping between game events and autoRefs (note: there can be multiple autoRefs per event)
 create table game_event_auto_ref_mapping
 (
     auto_ref_id_fk   uuid references auto_refs (id),
-    game_event_id_fk uuid references game_events (id),
+    game_event_id_fk uuid references game_events (id) on delete cascade,
     primary key (auto_ref_id_fk, game_event_id_fk)
 );
 

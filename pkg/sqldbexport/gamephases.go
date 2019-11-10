@@ -6,9 +6,17 @@ import (
 	"github.com/pkg/errors"
 )
 
-func (p *SqlDbExporter) WriteGamePhases(matchStats *matchstats.MatchStats, matchId *uuid.UUID) error {
+func (p *SqlDbExporter) removeOldMatchData(matchId *uuid.UUID) error {
+	// delete all game phases and all foreign key references to it by cascading
 	if _, err := p.db.Exec("DELETE FROM game_phases WHERE match_id_fk=$1", matchId); err != nil {
-		return errors.Wrap(err, "Could not delete previous game phases for id:"+matchId.String())
+		return errors.Wrap(err, "Could not delete previous game phases for id: "+matchId.String())
+	}
+	return nil
+}
+
+func (p *SqlDbExporter) WriteGamePhases(matchStats *matchstats.MatchStats, matchId *uuid.UUID) error {
+	if err := p.removeOldMatchData(matchId); err != nil {
+		return err
 	}
 
 	for _, gamePhase := range matchStats.GamePhases {
@@ -73,7 +81,9 @@ func (p *SqlDbExporter) insertGamePhase(gamePhase *matchstats.GamePhase, matchId
 		convertDuration(uint32(gamePhase.StageTimeLeftExit)),
 	)
 
-	p.WriteGameEvents(gamePhase.GameEventsTimed, id)
+	if err != nil {
+		return err
+	}
 
-	return err
+	return p.WriteGameEvents(gamePhase.GameEventsTimed, id)
 }

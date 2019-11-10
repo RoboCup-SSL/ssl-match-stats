@@ -3,13 +3,15 @@ package sqldbexport
 import (
 	"context"
 	"database/sql"
+	"github.com/google/uuid"
 	_ "github.com/lib/pq"
 	"time"
 )
 
 type SqlDbExporter struct {
-	db  *sql.DB
-	ctx context.Context
+	db       *sql.DB
+	ctx      context.Context
+	autoRefs map[string]uuid.UUID
 }
 
 func (p *SqlDbExporter) Connect(driver string, dataSourceName string) error {
@@ -19,6 +21,7 @@ func (p *SqlDbExporter) Connect(driver string, dataSourceName string) error {
 	}
 	p.db = db
 	p.ctx = context.Background()
+	p.autoRefs = map[string]uuid.UUID{}
 	return nil
 }
 
