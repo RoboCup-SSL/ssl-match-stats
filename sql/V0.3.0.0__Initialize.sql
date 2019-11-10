@@ -117,12 +117,3 @@ create table game_phases
     stage_time_left_entry          interval(3), -- millisecond precision
     stage_time_left_exit           interval(3)  -- millisecond precision
 );
-
--- grant read access to view user
-create user ssl_match_stats_view with encrypted password 'ssl_match_stats_view';
-grant usage on schema public to ssl_match_stats_view;
-
-grant select on table tournaments to ssl_match_stats_view;
-grant select on table matches to ssl_match_stats_view;
-grant select on table team_match_stats to ssl_match_stats_view;
-grant select on table game_phases to ssl_match_stats_view;

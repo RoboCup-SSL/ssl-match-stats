@@ -68,8 +68,3 @@ create table game_event_auto_ref_mapping
     game_event_id_fk uuid references game_events (id) on delete cascade,
     primary key (auto_ref_id_fk, game_event_id_fk)
 );
-
--- grant read access to view user
-grant select on table auto_refs to ssl_match_stats_view;
-grant select on table game_events to ssl_match_stats_view;
-grant select on table game_event_auto_ref_mapping to ssl_match_stats_view;
