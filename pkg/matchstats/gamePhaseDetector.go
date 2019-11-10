@@ -103,6 +103,9 @@ func (d *GamePhaseDetector) OnLastRefereeMessage(matchStats *MatchStats, referee
 }
 
 func (d *GamePhaseDetector) OnNewRefereeMessage(matchStats *MatchStats, referee *sslproto.Referee) {
+	if d.currentPhase == nil {
+		return
+	}
 	d.currentPhase.GameEventsApplied = processGameEvents(d.currentPhase.GameEventsApplied, referee.GameEvents, *referee.PacketTimestamp)
 
 	var proposedGameEvents []*sslproto.GameEvent
