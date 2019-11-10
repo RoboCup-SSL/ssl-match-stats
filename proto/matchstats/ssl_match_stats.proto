@@ -79,7 +79,8 @@ message GamePhase {
     sint32 stage_time_left_exit = 13;
 
     Command command_prev = 14;
-    repeated GameEventTimed game_events_timed = 15;
+    repeated GameEventTimed game_events_applied = 15;
+    repeated GameEventTimed game_events_proposed = 16;
 }
 
 message GameEventTimed {

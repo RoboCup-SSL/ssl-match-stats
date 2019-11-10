@@ -85,5 +85,9 @@ func (p *SqlDbExporter) insertGamePhase(gamePhase *matchstats.GamePhase, matchId
 		return err
 	}
 
-	return p.WriteGameEvents(gamePhase.GameEventsTimed, id)
+	if err := p.WriteGameEvents(gamePhase.GameEventsApplied, id, GameEventKindApplied); err != nil {
+		return err
+	}
+
+	return p.WriteGameEvents(gamePhase.GameEventsProposed, id, GameEventKindProposed)
 }

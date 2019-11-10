@@ -57,6 +57,7 @@ create table game_events
     type             game_event,
     timestamp        timestamp,
     withdrawn        bool,
+    proposed         bool,
     payload          jsonb
 );
 

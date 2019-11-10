@@ -8,23 +8,28 @@ import (
 	"log"
 )
 
-func (p *SqlDbExporter) WriteGameEvents(gameEvents []*matchstats.GameEventTimed, gamePhaseId uuid.UUID) error {
+type GameEventKind int
+
+const (
+	GameEventKindApplied  = iota
+	GameEventKindProposed = iota
+)
+
+func (p *SqlDbExporter) WriteGameEvents(gameEvents []*matchstats.GameEventTimed, gamePhaseId uuid.UUID, kind GameEventKind) error {
 	for _, gameEvent := range gameEvents {
-		if err := p.insertGameEvent(gameEvent, gamePhaseId); err != nil {
+		if err := p.insertGameEvent(gameEvent, gamePhaseId, kind); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func (p *SqlDbExporter) insertGameEvent(gameEvent *matchstats.GameEventTimed, gamePhaseId uuid.UUID) error {
+func (p *SqlDbExporter) insertGameEvent(gameEvent *matchstats.GameEventTimed, gamePhaseId uuid.UUID, kind GameEventKind) error {
 
 	payload, err := json.Marshal(gameEvent.GameEvent)
 	if err != nil {
 		return err
 	}
-
-	// TODO proposed game events
 
 	gameEventId := uuid.New()
 	_, err = p.db.Exec(
@@ -34,14 +39,16 @@ func (p *SqlDbExporter) insertGameEvent(gameEvent *matchstats.GameEventTimed, ga
                      type,
 					 timestamp,
 					 withdrawn,
+					 proposed,
 					 payload
                      ) 
-				VALUES ($1, $2, $3, $4, $5, $6)`,
+				VALUES ($1, $2, $3, $4, $5, $6, $7)`,
 		gameEventId,
 		gamePhaseId,
 		gameEvent.GameEvent.Type.String(),
 		convertTime(gameEvent.Timestamp),
 		gameEvent.Withdrawn,
+		kind == GameEventKindProposed,
 		payload,
 	)
 

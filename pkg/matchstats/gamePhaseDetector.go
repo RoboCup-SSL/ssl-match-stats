@@ -103,19 +103,32 @@ func (d *GamePhaseDetector) OnLastRefereeMessage(matchStats *MatchStats, referee
 }
 
 func (d *GamePhaseDetector) OnNewRefereeMessage(matchStats *MatchStats, referee *sslproto.Referee) {
+	d.currentPhase.GameEventsApplied = processGameEvents(d.currentPhase.GameEventsApplied, referee.GameEvents, *referee.PacketTimestamp)
 
-	for _, presentGameEvent := range d.currentPhase.GameEventsTimed {
-		if !containsGameEvent(presentGameEvent.GameEvent, referee.GameEvents) {
+	var proposedGameEvents []*sslproto.GameEvent
+	for _, gameEvent := range referee.ProposedGameEvents {
+		proposedGameEvents = append(proposedGameEvents, gameEvent.GameEvent)
+	}
+
+	d.currentPhase.GameEventsProposed = processGameEvents(d.currentPhase.GameEventsProposed, proposedGameEvents, *referee.PacketTimestamp)
+}
+
+func processGameEvents(gameEvents []*GameEventTimed, newGameEvents []*sslproto.GameEvent, timestamp uint64) []*GameEventTimed {
+
+	for _, presentGameEvent := range gameEvents {
+		if !containsGameEvent(presentGameEvent.GameEvent, newGameEvents) {
 			presentGameEvent.Withdrawn = true
 		}
 	}
 
-	for _, presentGameEvent := range referee.GameEvents {
-		if !containsGameEventTimed(presentGameEvent, d.currentPhase.GameEventsTimed) {
-			gameEventTimed := GameEventTimed{GameEvent: presentGameEvent, Timestamp: *referee.PacketTimestamp, Withdrawn: false}
-			d.currentPhase.GameEventsTimed = append(d.currentPhase.GameEventsTimed, &gameEventTimed)
+	for _, presentGameEvent := range newGameEvents {
+		if !containsGameEventTimed(presentGameEvent, gameEvents) {
+			gameEventTimed := GameEventTimed{GameEvent: presentGameEvent, Timestamp: timestamp, Withdrawn: false}
+			gameEvents = append(gameEvents, &gameEventTimed)
 		}
 	}
+
+	return gameEvents
 }
 
 func containsGameEventTimed(gameEvent *sslproto.GameEvent, gameEvents []*GameEventTimed) bool {
