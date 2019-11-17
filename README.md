@@ -69,7 +69,10 @@ ssl-match-stats-db -sqlDbSource postgres://user:password@host:port/db-name -tour
 
 ### Database
 
-A docker-compose config is provided to startup a postgres DB. To start, run:
+A docker-compose config is provided to startup a postgres DB.
+You have to install `docker` and `docker-compose` for that. 
+
+To start, run:
 ```shell script
 docker-compose up
 ```
@@ -78,3 +81,27 @@ The database connection string is: `postgres://ssl_match_stats:ssl_match_stats@l
 The database schema will automatically be installed with flyway. 
 Data will be stored in a volume, so it is not lost when stopping docker-compose.
 To reset the database, run `docker-compose down`.
+
+### Protobuf
+
+To generate the sources from the `.proto` files, run the [generateProto.sh](./generateProto.sh) script.
+
+
+## Implementation Details
+
+This tool reads log files one by one with the `ssl-match-stats` command and creates a protobuf file based on [ssl_match_stats.proto](./proto/matchstats/ssl_match_stats.proto).
+This structure contains a `MatchStats` object per match (log file), which contains:
+
+ * Some meta data like name, duration, etc.
+ * A list of all game phases (which map roughly to referee commands)
+ * `TeamStats` for each team
+
+The incentive is that the `MatchStats` structure contains an improved representation of the referee messages
+for further processing. The match is split into game phases, where a new game phase is started for each new command 
+(except the goal commands). Each game phase has meta data, entry and exit states and game events attached to it.
+`TeamStats` contain aggregated final counters and timers.
+
+With this improved representation, the data can be exported for further analysis. 
+There is currently a CSV exporter which does some additional aggregation and outputs simple CSV files.
+As this type of output format is quite limited, there is also a database exporter which connects to a 
+postgres DB. Data is added in a way that allows filtering and aggregation on database level.
