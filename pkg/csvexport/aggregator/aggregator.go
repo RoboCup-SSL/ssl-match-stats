@@ -12,6 +12,7 @@ type Aggregator struct {
 	Collection         matchstats.MatchStatsCollection
 	GamePhaseDurations map[string]*DurationStats
 	GameEventDurations map[string]*DurationStats
+	TeamStats          map[string]*matchstats.TeamStats
 }
 
 func NewAggregator(collection matchstats.MatchStatsCollection) *Aggregator {

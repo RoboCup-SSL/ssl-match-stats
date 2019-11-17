@@ -119,5 +119,4 @@ message MatchStats {
 
 message MatchStatsCollection {
     repeated MatchStats match_stats = 1;
-    map<string,TeamStats> team_stats = 2;
 }

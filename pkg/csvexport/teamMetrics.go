@@ -1,6 +1,7 @@
 package csvexport
 
 import (
+	"github.com/RoboCup-SSL/ssl-match-stats/pkg/csvexport/aggregator"
 	"github.com/RoboCup-SSL/ssl-match-stats/pkg/matchstats"
 	"sort"
 )
@@ -22,19 +23,19 @@ func WriteTeamMetricsPerGame(matchStatsCollection *matchstats.MatchStatsCollecti
 	return writeCsv(header, records, filename)
 }
 
-func WriteTeamMetricsSum(matchStatsCollection *matchstats.MatchStatsCollection, filename string) error {
+func WriteTeamMetricsSum(aggregator *aggregator.Aggregator, filename string) error {
 
 	header := []string{"Team", "Scored Goals", "Conceded Goals", "Fouls", "Yellow Cards", "Red Cards", "Timeout Time", "Timeouts", "Penalty Shots", "Ball Placement Time", "Ball Placements", "Max active Yellow Cards"}
 
 	var teamNamesSorted []string
-	for k := range matchStatsCollection.TeamStats {
+	for k := range aggregator.TeamStats {
 		teamNamesSorted = append(teamNamesSorted, k)
 	}
 	sort.Strings(teamNamesSorted)
 
 	var records [][]string
 	for _, teamName := range teamNamesSorted {
-		teamStats := matchStatsCollection.TeamStats[teamName]
+		teamStats := aggregator.TeamStats[teamName]
 		records = append(records, teamNumbers(teamStats))
 	}
 

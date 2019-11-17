@@ -3,15 +3,15 @@ package aggregator
 import "github.com/RoboCup-SSL/ssl-match-stats/pkg/matchstats"
 
 func (a *Aggregator) AggregateTeamMetrics() error {
-	a.Collection.TeamStats = map[string]*matchstats.TeamStats{}
+	a.TeamStats = map[string]*matchstats.TeamStats{}
 	for _, matchStats := range a.Collection.MatchStats {
-		a.Collection.TeamStats[matchStats.TeamStatsYellow.Name] = &matchstats.TeamStats{Name: matchStats.TeamStatsYellow.Name}
-		a.Collection.TeamStats[matchStats.TeamStatsBlue.Name] = &matchstats.TeamStats{Name: matchStats.TeamStatsBlue.Name}
+		a.TeamStats[matchStats.TeamStatsYellow.Name] = &matchstats.TeamStats{Name: matchStats.TeamStatsYellow.Name}
+		a.TeamStats[matchStats.TeamStatsBlue.Name] = &matchstats.TeamStats{Name: matchStats.TeamStatsBlue.Name}
 	}
 
 	for _, matchStats := range a.Collection.MatchStats {
-		addTeamStats(a.Collection.TeamStats[matchStats.TeamStatsYellow.Name], matchStats.TeamStatsYellow)
-		addTeamStats(a.Collection.TeamStats[matchStats.TeamStatsBlue.Name], matchStats.TeamStatsBlue)
+		addTeamStats(a.TeamStats[matchStats.TeamStatsYellow.Name], matchStats.TeamStatsYellow)
+		addTeamStats(a.TeamStats[matchStats.TeamStatsBlue.Name], matchStats.TeamStatsBlue)
 	}
 
 	return nil

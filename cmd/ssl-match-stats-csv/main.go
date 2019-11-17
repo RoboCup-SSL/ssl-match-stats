@@ -37,7 +37,7 @@ func main() {
 	if err := csvexport.WriteTeamMetricsPerGame(&a.Collection, "team-metrics-per-game.csv"); err != nil {
 		log.Fatal(err)
 	}
-	if err := csvexport.WriteTeamMetricsSum(&a.Collection, "team-metrics-sum.csv"); err != nil {
+	if err := csvexport.WriteTeamMetricsSum(a, "team-metrics-sum.csv"); err != nil {
 		log.Fatal(err)
 	}
 
