@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/RoboCup-SSL/ssl-match-stats/pkg/csvexport"
+	"github.com/RoboCup-SSL/ssl-match-stats/pkg/csvexport/aggregator"
 	"github.com/RoboCup-SSL/ssl-match-stats/pkg/matchstats"
 	"log"
 	"os"
@@ -14,9 +15,15 @@ func main() {
 
 	flag.Parse()
 
-	a := matchstats.NewAggregator()
+	c := matchstats.NewCollector()
 
-	if err := a.ReadBin("match-stats.bin"); err != nil {
+	if err := c.ReadBin("match-stats.bin"); err != nil {
+		log.Fatal(err)
+	}
+
+	a := aggregator.NewAggregator(c.Collection)
+
+	if err := a.Aggregate(); err != nil {
 		log.Fatal(err)
 	}
 
@@ -37,13 +44,13 @@ func main() {
 	if err := csvexport.WriteGamePhaseDurationStats(&a.Collection, "game-phase-duration-stats.csv"); err != nil {
 		log.Fatal(err)
 	}
-	if err := csvexport.WriteGamePhaseDurationStatsAggregated(&a.Collection, "game-phase-duration-stats-aggregated.csv"); err != nil {
+	if err := csvexport.WriteGamePhaseDurationStatsAggregated(a, "game-phase-duration-stats-aggregated.csv"); err != nil {
 		log.Fatal(err)
 	}
 	if err := csvexport.WriteGameEventDurationStats(&a.Collection, "game-event-duration-stats.csv"); err != nil {
 		log.Fatal(err)
 	}
-	if err := csvexport.WriteGameEventDurationStatsAggregated(&a.Collection, "game-event-duration-stats-aggregated.csv"); err != nil {
+	if err := csvexport.WriteGameEventDurationStatsAggregated(a, "game-event-duration-stats-aggregated.csv"); err != nil {
 		log.Fatal(err)
 	}
 }

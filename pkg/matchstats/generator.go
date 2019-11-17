@@ -5,9 +5,7 @@ import (
 	"github.com/RoboCup-SSL/ssl-go-tools/pkg/sslproto"
 	"github.com/pkg/errors"
 	"log"
-	"math"
 	"path/filepath"
-	"sort"
 	"time"
 )
 
@@ -67,9 +65,6 @@ func (m *Generator) Process(filename string) (*MatchStats, error) {
 
 	m.OnLastRefereeMessage(matchStats, lastRefereeMsg)
 
-	AggregateGamePhaseStats(matchStats)
-	AggregateGameEvents(matchStats)
-
 	return matchStats, logReader.Close()
 }
 
@@ -101,78 +96,4 @@ func packetTimeStampToTime(packetTimestamp uint64) time.Time {
 	seconds := int64(packetTimestamp / 1_000_000)
 	nanoSeconds := int64(packetTimestamp-uint64(seconds*1_000_000)) * 1000
 	return time.Unix(seconds, nanoSeconds)
-}
-
-func AggregateGamePhaseStats(matchStats *MatchStats) {
-
-	matchStats.GamePhaseDurations = map[string]*DurationStats{}
-	durations := map[string][]int{}
-
-	for _, phaseName := range GamePhaseType_name {
-		matchStats.GamePhaseDurations[phaseName] = new(DurationStats)
-	}
-
-	for _, phase := range matchStats.GamePhases {
-		phaseName := (*phase).Type.String()
-		matchStats.GamePhaseDurations[phaseName].Duration += phase.Duration
-		matchStats.GamePhaseDurations[phaseName].Count += 1
-		durations[phaseName] = append(durations[phaseName], int(phase.Duration))
-	}
-
-	for _, phaseName := range GamePhaseType_name {
-		stats := matchStats.GamePhaseDurations[phaseName]
-		phaseDurations := durations[phaseName]
-		if len(phaseDurations) > 0 {
-			sort.Ints(phaseDurations)
-			stats.DurationMin = uint32(phaseDurations[0])
-			stats.DurationMax = uint32(phaseDurations[len(phaseDurations)-1])
-			stats.DurationMedian = uint32(phaseDurations[len(phaseDurations)/2])
-			stats.DurationAvg = uint32(math.Round(float64(stats.Duration) / float64(len(phaseDurations))))
-		}
-	}
-
-	checkSum := uint32(0)
-	for _, phaseName := range GamePhaseType_name {
-		checkSum += matchStats.GamePhaseDurations[phaseName].Duration
-		matchStats.GamePhaseDurations[phaseName].DurationRelative = float32(matchStats.GamePhaseDurations[phaseName].Duration) / float32(matchStats.MatchDuration)
-	}
-
-	if matchStats.MatchDuration != checkSum {
-		log.Printf("Match duration mismatch. Total: %v, Sum of phases: %v, Diff: %v", matchStats.MatchDuration, checkSum, matchStats.MatchDuration-checkSum)
-	}
-}
-
-func AggregateGameEvents(matchStats *MatchStats) {
-
-	matchStats.GameEventDurations = map[string]*DurationStats{}
-	durations := map[string][]int{}
-
-	for _, p := range sslproto.GameEventType_name {
-		matchStats.GameEventDurations[p] = new(DurationStats)
-		matchStats.GameEventDurations[p].Duration = 0
-	}
-
-	for _, phase := range matchStats.GamePhases {
-		if len(phase.GameEventsEntry) == 0 {
-			continue
-		}
-
-		primaryEvent := phase.GameEventsEntry[0]
-		eventName := primaryEvent.Type.String()
-		matchStats.GameEventDurations[eventName].Duration += phase.Duration
-		matchStats.GameEventDurations[eventName].Count += 1
-		durations[eventName] = append(durations[eventName], int(phase.Duration))
-	}
-
-	for _, eventName := range sslproto.GameEventType_name {
-		stats := matchStats.GameEventDurations[eventName]
-		eventDurations := durations[eventName]
-		if len(eventDurations) > 0 {
-			sort.Ints(eventDurations)
-			stats.DurationMin = uint32(eventDurations[0])
-			stats.DurationMax = uint32(eventDurations[len(eventDurations)-1])
-			stats.DurationMedian = uint32(eventDurations[len(eventDurations)/2])
-			stats.DurationAvg = uint32(math.Round(float64(stats.Duration) / float64(len(eventDurations))))
-		}
-	}
 }

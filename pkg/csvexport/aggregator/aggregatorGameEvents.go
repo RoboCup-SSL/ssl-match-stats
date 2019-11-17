@@ -1,4 +1,4 @@
-package matchstats
+package aggregator
 
 import (
 	"github.com/RoboCup-SSL/ssl-go-tools/pkg/sslproto"
@@ -8,11 +8,11 @@ import (
 
 func (a *Aggregator) AggregateGameEvents() error {
 
-	a.Collection.GameEventDurations = map[string]*DurationStats{}
+	a.GameEventDurations = map[string]*DurationStats{}
 	durations := map[string][]int{}
 
 	for _, name := range sslproto.GameEventType_name {
-		a.Collection.GameEventDurations[name] = new(DurationStats)
+		a.GameEventDurations[name] = new(DurationStats)
 	}
 
 	for _, matchStats := range a.Collection.MatchStats {
@@ -23,14 +23,14 @@ func (a *Aggregator) AggregateGameEvents() error {
 
 			primaryEvent := phase.GameEventsEntry[0]
 			eventName := primaryEvent.Type.String()
-			a.Collection.GameEventDurations[eventName].Duration += phase.Duration
-			a.Collection.GameEventDurations[eventName].Count += 1
+			a.GameEventDurations[eventName].Duration += phase.Duration
+			a.GameEventDurations[eventName].Count += 1
 			durations[eventName] = append(durations[eventName], int(phase.Duration))
 		}
 	}
 
 	for _, eventName := range sslproto.GameEventType_name {
-		stats := a.Collection.GameEventDurations[eventName]
+		stats := a.GameEventDurations[eventName]
 		eventDurations := durations[eventName]
 		if len(eventDurations) > 0 {
 			sort.Ints(eventDurations)

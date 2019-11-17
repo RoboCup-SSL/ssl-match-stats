@@ -20,7 +20,7 @@ func main() {
 		return
 	}
 
-	a := matchstats.NewAggregator()
+	a := matchstats.NewCollector()
 	for _, filename := range args {
 		log.Println("Processing", filename)
 
@@ -30,10 +30,6 @@ func main() {
 		} else {
 			log.Printf("Processed %v\n", filename)
 		}
-	}
-
-	if err := a.Aggregate(); err != nil {
-		log.Println("Failed to aggregate match stats", err)
 	}
 
 	if err := a.WriteBin("match-stats.bin"); err != nil {

@@ -8,18 +8,18 @@ import (
 	"os"
 )
 
-type Aggregator struct {
+type Collector struct {
 	Collection MatchStatsCollection
 }
 
-func NewAggregator() *Aggregator {
-	generator := new(Aggregator)
+func NewCollector() *Collector {
+	generator := new(Collector)
 	generator.Collection = MatchStatsCollection{}
 	generator.Collection.MatchStats = []*MatchStats{}
 	return generator
 }
 
-func (a *Aggregator) Process(filename string) error {
+func (a *Collector) Process(filename string) error {
 	generator := NewGenerator()
 
 	matchStats, err := generator.Process(filename)
@@ -31,21 +31,7 @@ func (a *Aggregator) Process(filename string) error {
 	return nil
 }
 
-func (a *Aggregator) Aggregate() error {
-	if err := a.AggregateGamePhases(); err != nil {
-		return err
-	}
-	if err := a.AggregateGameEvents(); err != nil {
-		return err
-	}
-	if err := a.AggregateTeamMetrics(); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (a *Aggregator) WriteJson(filename string) error {
+func (a *Collector) WriteJson(filename string) error {
 	f, err := os.Create(filename)
 	if err != nil {
 		return errors.Wrap(err, "Could not create JSON output file")
@@ -59,7 +45,7 @@ func (a *Aggregator) WriteJson(filename string) error {
 	return f.Close()
 }
 
-func (a *Aggregator) WriteBin(filename string) error {
+func (a *Collector) WriteBin(filename string) error {
 	f, err := os.Create(filename)
 	if err != nil {
 		return errors.Wrap(err, "Could not create Binary output file")
@@ -76,7 +62,7 @@ func (a *Aggregator) WriteBin(filename string) error {
 	return f.Close()
 }
 
-func (a *Aggregator) ReadBin(filename string) error {
+func (a *Collector) ReadBin(filename string) error {
 	f, err := os.Open(filename)
 	if err != nil {
 		return err

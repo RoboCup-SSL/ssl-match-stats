@@ -2,6 +2,7 @@ package csvexport
 
 import (
 	"github.com/RoboCup-SSL/ssl-go-tools/pkg/sslproto"
+	"github.com/RoboCup-SSL/ssl-match-stats/pkg/csvexport/aggregator"
 	"github.com/RoboCup-SSL/ssl-match-stats/pkg/matchstats"
 	"math"
 )
@@ -13,15 +14,16 @@ func WriteGameEventDurationStats(matchStatsCollection *matchstats.MatchStatsColl
 	var records [][]string
 	for _, matchStats := range matchStatsCollection.MatchStats {
 		for _, eventName := range sslproto.GameEventType_name {
+			durations := aggregator.AggregateGameEventDurations(matchStats)
 			record := []string{
 				matchStats.Name,
 				eventName,
-				uintToStr(matchStats.GameEventDurations[eventName].Duration),
-				uintToStr(matchStats.GameEventDurations[eventName].DurationMin),
-				uintToStr(matchStats.GameEventDurations[eventName].DurationMedian),
-				uintToStr(uint32(math.Round(float64(matchStats.GameEventDurations[eventName].DurationAvg)))),
-				uintToStr(matchStats.GameEventDurations[eventName].DurationMax),
-				uintToStr(matchStats.GameEventDurations[eventName].Count),
+				uintToStr(durations[eventName].Duration),
+				uintToStr(durations[eventName].DurationMin),
+				uintToStr(durations[eventName].DurationMedian),
+				uintToStr(uint32(math.Round(float64(durations[eventName].DurationAvg)))),
+				uintToStr(durations[eventName].DurationMax),
+				uintToStr(durations[eventName].Count),
 			}
 			records = append(records, record)
 		}
@@ -30,7 +32,7 @@ func WriteGameEventDurationStats(matchStatsCollection *matchstats.MatchStatsColl
 	return writeCsv(header, records, filename)
 }
 
-func WriteGameEventDurationStatsAggregated(matchStatsCollection *matchstats.MatchStatsCollection, filename string) error {
+func WriteGameEventDurationStatsAggregated(aggregator *aggregator.Aggregator, filename string) error {
 
 	header := []string{"Game Event", "Duration Sum", "Min Duration", "Median Duration", "Avg Duration", "Max Duration", "Count"}
 
@@ -38,12 +40,12 @@ func WriteGameEventDurationStatsAggregated(matchStatsCollection *matchstats.Matc
 	for _, eventName := range sslproto.GameEventType_name {
 		record := []string{
 			eventName,
-			uintToStr(matchStatsCollection.GameEventDurations[eventName].Duration),
-			uintToStr(matchStatsCollection.GameEventDurations[eventName].DurationMin),
-			uintToStr(matchStatsCollection.GameEventDurations[eventName].DurationMedian),
-			uintToStr(uint32(math.Round(float64(matchStatsCollection.GameEventDurations[eventName].DurationAvg)))),
-			uintToStr(matchStatsCollection.GameEventDurations[eventName].DurationMax),
-			uintToStr(matchStatsCollection.GameEventDurations[eventName].Count),
+			uintToStr(aggregator.GameEventDurations[eventName].Duration),
+			uintToStr(aggregator.GameEventDurations[eventName].DurationMin),
+			uintToStr(aggregator.GameEventDurations[eventName].DurationMedian),
+			uintToStr(uint32(math.Round(float64(aggregator.GameEventDurations[eventName].DurationAvg)))),
+			uintToStr(aggregator.GameEventDurations[eventName].DurationMax),
+			uintToStr(aggregator.GameEventDurations[eventName].Count),
 		}
 		records = append(records, record)
 	}

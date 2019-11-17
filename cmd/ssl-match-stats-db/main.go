@@ -36,7 +36,7 @@ func main() {
 		log.Fatalf("Could not connect to database with driver '%v' at '%v'", *sqlDriver, *sqlDbSource)
 	}
 
-	a := matchstats.NewAggregator()
+	a := matchstats.NewCollector()
 
 	if err := a.ReadBin("match-stats.bin"); err != nil {
 		log.Fatal(err)
