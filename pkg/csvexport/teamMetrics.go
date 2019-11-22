@@ -45,16 +45,16 @@ func WriteTeamMetricsSum(aggregator *aggregator.Aggregator, filename string) err
 func teamNumbers(stats *matchstats.TeamStats) []string {
 	return []string{
 		stats.Name,
-		uintToStr(stats.Goals),
-		uintToStr(stats.ConcededGoals),
-		uintToStr(stats.Fouls),
-		uintToStr(stats.YellowCards),
-		uintToStr(stats.RedCards),
+		intToStr(stats.Goals),
+		intToStr(stats.ConcededGoals),
+		intToStr(stats.Fouls),
+		intToStr(stats.YellowCards),
+		intToStr(stats.RedCards),
 		uintToStr(stats.TimeoutTime),
-		uintToStr(stats.TimeoutsTaken),
-		uintToStr(stats.PenaltyShotsTotal),
+		intToStr(stats.TimeoutsTaken),
+		intToStr(stats.PenaltyShotsTotal),
 		uintToStr(stats.BallPlacementTime),
-		uintToStr(stats.BallPlacements),
-		uintToStr(stats.MaxActiveYellowCards),
+		intToStr(stats.BallPlacements),
+		intToStr(stats.MaxActiveYellowCards),
 	}
 }

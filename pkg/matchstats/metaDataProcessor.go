@@ -3,6 +3,7 @@ package matchstats
 import (
 	"github.com/RoboCup-SSL/ssl-go-tools/pkg/sslproto"
 	"log"
+	"math"
 	"time"
 )
 
@@ -95,13 +96,19 @@ func addTimeout(teamStats *TeamStats, teamInfo *sslproto.Referee_TeamInfo, avail
 			log.Println("Fixing known bug: In 2019, timeout time in extra halves was 5min instead of 2.5min")
 		}
 	}
-	teamStats.TimeoutTime += availableTime - *teamInfo.TimeoutTime
-	teamStats.TimeoutsTaken += availableTimeouts - *teamInfo.Timeouts
 
-	// workaround for integer overflow (in the above case, the overflow cancels out)
-	if *teamInfo.Timeouts < 100 {
-		teamStats.TimeoutsLeft += *teamInfo.Timeouts
+	var timeouts int32
+	if *teamInfo.Timeouts > 100 {
+		// workaround for integer overflow
+		timeouts = int32(int64(*teamInfo.Timeouts) - math.MaxUint32)
+	} else {
+		timeouts = int32(*teamInfo.Timeouts)
 	}
+
+	teamStats.TimeoutTime += availableTime - *teamInfo.TimeoutTime
+	teamStats.TimeoutsTaken += int32(availableTimeouts) - timeouts
+
+	teamStats.TimeoutsLeft += timeouts
 }
 
 func (m *MetaDataProcessor) OnNewRefereeMessage(matchStats *MatchStats, referee *sslproto.Referee) {
@@ -110,7 +117,7 @@ func (m *MetaDataProcessor) OnNewRefereeMessage(matchStats *MatchStats, referee 
 }
 
 func (m *MetaDataProcessor) updateMaxActiveYellowCards(teamInfo *sslproto.Referee_TeamInfo, teamStats *TeamStats) {
-	activeCards := uint32(len(teamInfo.YellowCardTimes))
+	activeCards := int32(len(teamInfo.YellowCardTimes))
 	if teamStats.MaxActiveYellowCards < activeCards {
 		teamStats.MaxActiveYellowCards = activeCards
 	}
@@ -118,11 +125,11 @@ func (m *MetaDataProcessor) updateMaxActiveYellowCards(teamInfo *sslproto.Refere
 
 func processTeam(stats *TeamStats, team *sslproto.Referee_TeamInfo, otherTeam *sslproto.Referee_TeamInfo) {
 	stats.Name = *team.Name
-	stats.Goals = *team.Score
-	stats.ConcededGoals = *otherTeam.Score
-	stats.YellowCards = *team.YellowCards
-	stats.RedCards = *team.RedCards
+	stats.Goals = int32(*team.Score)
+	stats.ConcededGoals = int32(*otherTeam.Score)
+	stats.YellowCards = int32(*team.YellowCards)
+	stats.RedCards = int32(*team.RedCards)
 	if team.FoulCounter != nil {
-		stats.Fouls = *team.FoulCounter
+		stats.Fouls = int32(*team.FoulCounter)
 	}
 }

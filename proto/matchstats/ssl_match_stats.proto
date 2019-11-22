@@ -91,19 +91,19 @@ message GameEventTimed {
 
 message TeamStats {
     string name = 1;
-    uint32 goals = 2;
-    uint32 fouls = 3;
-    uint32 yellow_cards = 4;
-    uint32 red_cards = 5;
+    int32 goals = 2;
+    int32 fouls = 3;
+    int32 yellow_cards = 4;
+    int32 red_cards = 5;
     uint32 timeout_time = 6;
-    uint32 timeouts_taken = 7;
-    uint32 timeouts_left = 14;
-    uint32 penalty_shots_total = 8;
-    uint32 penalty_shots_success = 9;
-    uint32 conceded_goals = 10;
+    int32 timeouts_taken = 7;
+    int32 timeouts_left = 14;
+    int32 penalty_shots_total = 8;
+    int32 penalty_shots_success = 9;
+    int32 conceded_goals = 10;
     uint32 ball_placement_time = 11;
-    uint32 ball_placements = 12;
-    uint32 max_active_yellow_cards = 13;
+    int32 ball_placements = 12;
+    int32 max_active_yellow_cards = 13;
 }
 
 message MatchStats {
