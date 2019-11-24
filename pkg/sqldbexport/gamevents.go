@@ -3,9 +3,11 @@ package sqldbexport
 import (
 	"database/sql"
 	"encoding/json"
+	"github.com/RoboCup-SSL/ssl-go-tools/pkg/sslproto"
 	"github.com/RoboCup-SSL/ssl-match-stats/pkg/matchstats"
 	"github.com/google/uuid"
 	"log"
+	"reflect"
 )
 
 type GameEventKind int
@@ -31,26 +33,34 @@ func (p *SqlDbExporter) insertGameEvent(gameEvent *matchstats.GameEventTimed, ga
 		return err
 	}
 
+	byTeam := ByTeam(gameEvent.GameEvent)
+
 	gameEventId := uuid.New()
 	_, err = p.db.Exec(
 		`INSERT INTO game_events (
                      id, 
                      game_phase_id_fk, 
                      type,
+					 by_team,
 					 timestamp,
 					 withdrawn,
 					 proposed,
 					 payload
                      ) 
-				VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+				VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
 		gameEventId,
 		gamePhaseId,
 		gameEvent.GameEvent.Type.String(),
+		byTeam.String()[5:],
 		convertTime(gameEvent.Timestamp),
 		gameEvent.Withdrawn,
 		kind == GameEventKindProposed,
 		payload,
 	)
+
+	if err != nil {
+		return err
+	}
 
 	for _, origin := range gameEvent.GameEvent.Origin {
 		var autoRefId uuid.UUID
@@ -115,4 +125,20 @@ func (p *SqlDbExporter) insertAutoRefToGameEventMapping(autoRefId, gameEventId u
 	)
 
 	return err
+}
+
+// ByTeam extracts the `ByTeam` attribute from the game event details
+func ByTeam(gameEvent *sslproto.GameEvent) matchstats.TeamColor {
+	v := reflect.ValueOf(gameEvent.Event)
+	byTeamValue := v.Elem().Field(0).Elem().FieldByName("ByTeam")
+	if byTeamValue.IsValid() && !byTeamValue.IsNil() {
+		byTeam := sslproto.Team(byTeamValue.Elem().Int())
+		switch byTeam {
+		case sslproto.Team_YELLOW:
+			return matchstats.TeamColor_TEAM_YELLOW
+		case sslproto.Team_BLUE:
+			return matchstats.TeamColor_TEAM_BLUE
+		}
+	}
+	return matchstats.TeamColor_TEAM_UNKNOWN
 }
