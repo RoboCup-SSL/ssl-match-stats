@@ -10,7 +10,7 @@ A tool that generates statistics from [official SSL log files](https://ssl.roboc
 
 ## Requirements
 You need to install following dependencies first: 
- * Go >= 1.11
+ * Go >= 1.16
  
 ## Installation
 
@@ -89,7 +89,7 @@ To generate the sources from the `.proto` files, run the [generateProto.sh](./ge
 
 ## Implementation Details
 
-This tool reads log files one by one with the `ssl-match-stats` command and creates a protobuf file based on [ssl_match_stats.proto](./proto/matchstats/ssl_match_stats.proto).
+This tool reads log files one by one with the `ssl-match-stats` command and creates a protobuf file based on [ssl_match_stats.proto](./proto/ssl_match_stats.proto).
 This structure contains a `MatchStats` object per match (log file), which contains:
 
  * Some meta data like name, duration, etc.

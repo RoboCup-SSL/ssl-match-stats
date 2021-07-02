@@ -1,6 +1,8 @@
 syntax = "proto3";
 
-import "github.com/RoboCup-SSL/ssl-go-tools/pkg/sslproto/ssl_game_event_2019.proto";
+option go_package = "github.com/RoboCup-SSL/ssl-match-stats/pkg/matchstats";
+
+import "ssl_gc_game_event.proto";
 
 enum TeamColor {
     TEAM_UNKNOWN = 0;

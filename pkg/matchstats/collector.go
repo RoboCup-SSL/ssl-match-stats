@@ -1,20 +1,20 @@
 package matchstats
 
 import (
-	"github.com/golang/protobuf/jsonpb"
-	"github.com/golang/protobuf/proto"
 	"github.com/pkg/errors"
+	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/proto"
 	"io/ioutil"
 	"os"
 )
 
 type Collector struct {
-	Collection MatchStatsCollection
+	Collection *MatchStatsCollection
 }
 
 func NewCollector() *Collector {
 	generator := new(Collector)
-	generator.Collection = MatchStatsCollection{}
+	generator.Collection = new(MatchStatsCollection)
 	generator.Collection.MatchStats = []*MatchStats{}
 	return generator
 }
@@ -37,10 +37,11 @@ func (a *Collector) WriteJson(filename string) error {
 		return errors.Wrap(err, "Could not create JSON output file")
 	}
 
-	jsonMarsh := jsonpb.Marshaler{EmitDefaults: true, Indent: "  "}
-	err = jsonMarsh.Marshal(f, &a.Collection)
-	if err != nil {
+	jsonMarsh := protojson.MarshalOptions{EmitUnpopulated: true, Indent: "  "}
+	if data, err := jsonMarsh.Marshal(a.Collection); err != nil {
 		return errors.Wrap(err, "Could not marshal match stats to json")
+	} else if _, err := f.Write(data); err != nil {
+		return errors.Wrap(err, "Could write marshaled data to file")
 	}
 	return f.Close()
 }
@@ -51,7 +52,7 @@ func (a *Collector) WriteBin(filename string) error {
 		return errors.Wrap(err, "Could not create Binary output file")
 	}
 
-	bytes, err := proto.Marshal(&a.Collection)
+	bytes, err := proto.Marshal(a.Collection)
 	if err != nil {
 		return errors.Wrap(err, "Could not marshal match stats to binary")
 	}
@@ -73,7 +74,7 @@ func (a *Collector) ReadBin(filename string) error {
 		return err
 	}
 
-	err = proto.Unmarshal(bytes, &a.Collection)
+	err = proto.Unmarshal(bytes, a.Collection)
 	if err != nil {
 		return err
 	}

@@ -1,7 +1,7 @@
 package matchstats
 
 import (
-	"github.com/RoboCup-SSL/ssl-go-tools/pkg/sslproto"
+	"github.com/RoboCup-SSL/ssl-match-stats/internal/referee"
 	"log"
 	"math"
 	"time"
@@ -27,26 +27,26 @@ func NewMetaDataProcessor() *MetaDataProcessor {
 	return metaDataProcessor
 }
 
-func (m *MetaDataProcessor) OnNewStage(matchStats *MatchStats, referee *sslproto.Referee) {
-	if *referee.Stage == sslproto.Referee_EXTRA_TIME_BREAK {
-		addTimeout(matchStats.TeamStatsYellow, referee.Yellow, m.timeoutTimeNormal, m.timeoutsNormal)
-		addTimeout(matchStats.TeamStatsBlue, referee.Blue, m.timeoutTimeNormal, m.timeoutsNormal)
+func (m *MetaDataProcessor) OnNewStage(matchStats *MatchStats, ref *referee.Referee) {
+	if *ref.Stage == referee.Referee_EXTRA_TIME_BREAK {
+		addTimeout(matchStats.TeamStatsYellow, ref.Yellow, m.timeoutTimeNormal, m.timeoutsNormal)
+		addTimeout(matchStats.TeamStatsBlue, ref.Blue, m.timeoutTimeNormal, m.timeoutsNormal)
 	}
-	if *referee.Stage == sslproto.Referee_PENALTY_SHOOTOUT {
+	if *ref.Stage == referee.Referee_PENALTY_SHOOTOUT {
 		matchStats.Shootout = true
 	}
 }
 
-func (m *MetaDataProcessor) OnNewCommand(matchStats *MatchStats, referee *sslproto.Referee) {
-	switch *referee.Command {
-	case sslproto.Referee_PREPARE_PENALTY_BLUE:
+func (m *MetaDataProcessor) OnNewCommand(matchStats *MatchStats, ref *referee.Referee) {
+	switch *ref.Command {
+	case referee.Referee_PREPARE_PENALTY_BLUE:
 		matchStats.TeamStatsBlue.PenaltyShotsTotal += 1
-	case sslproto.Referee_PREPARE_PENALTY_YELLOW:
+	case referee.Referee_PREPARE_PENALTY_YELLOW:
 		matchStats.TeamStatsYellow.PenaltyShotsTotal += 1
 	}
 }
 
-func (m *MetaDataProcessor) OnFirstRefereeMessage(matchStats *MatchStats, referee *sslproto.Referee) {
+func (m *MetaDataProcessor) OnFirstRefereeMessage(matchStats *MatchStats, ref *referee.Referee) {
 	if matchStats.TeamStatsBlue == nil {
 		matchStats.TeamStatsBlue = new(TeamStats)
 	}
@@ -55,23 +55,23 @@ func (m *MetaDataProcessor) OnFirstRefereeMessage(matchStats *MatchStats, refere
 	}
 
 	matchStats.Shootout = false
-	m.startTime = packetTimeStampToTime(*referee.PacketTimestamp)
+	m.startTime = packetTimeStampToTime(*ref.PacketTimestamp)
 	matchStats.StartTime = uint64(m.startTime.UnixNano() / 1000)
 }
 
-func (m *MetaDataProcessor) OnLastRefereeMessage(matchStats *MatchStats, referee *sslproto.Referee) {
-	processTeam(matchStats.TeamStatsBlue, referee.Blue, referee.Yellow)
-	processTeam(matchStats.TeamStatsYellow, referee.Yellow, referee.Blue)
-	endTime := packetTimeStampToTime(*referee.PacketTimestamp)
+func (m *MetaDataProcessor) OnLastRefereeMessage(matchStats *MatchStats, ref *referee.Referee) {
+	processTeam(matchStats.TeamStatsBlue, ref.Blue, ref.Yellow)
+	processTeam(matchStats.TeamStatsYellow, ref.Yellow, ref.Blue)
+	endTime := packetTimeStampToTime(*ref.PacketTimestamp)
 	matchStats.MatchDuration = uint32(endTime.Sub(m.startTime).Microseconds())
 
-	if uint32(*referee.Stage) <= uint32(sslproto.Referee_NORMAL_SECOND_HALF) {
-		addTimeout(matchStats.TeamStatsYellow, referee.Yellow, m.timeoutTimeNormal, m.timeoutsNormal)
-		addTimeout(matchStats.TeamStatsBlue, referee.Blue, m.timeoutTimeNormal, m.timeoutsNormal)
+	if uint32(*ref.Stage) <= uint32(referee.Referee_NORMAL_SECOND_HALF) {
+		addTimeout(matchStats.TeamStatsYellow, ref.Yellow, m.timeoutTimeNormal, m.timeoutsNormal)
+		addTimeout(matchStats.TeamStatsBlue, ref.Blue, m.timeoutTimeNormal, m.timeoutsNormal)
 		matchStats.ExtraTime = false
 	} else {
-		addTimeout(matchStats.TeamStatsYellow, referee.Yellow, m.timeoutTimeExtra, m.timeoutsExtra)
-		addTimeout(matchStats.TeamStatsBlue, referee.Blue, m.timeoutTimeExtra, m.timeoutsExtra)
+		addTimeout(matchStats.TeamStatsYellow, ref.Yellow, m.timeoutTimeExtra, m.timeoutsExtra)
+		addTimeout(matchStats.TeamStatsBlue, ref.Blue, m.timeoutTimeExtra, m.timeoutsExtra)
 		matchStats.ExtraTime = true
 	}
 
@@ -88,7 +88,7 @@ func (m *MetaDataProcessor) OnLastRefereeMessage(matchStats *MatchStats, referee
 	}
 }
 
-func addTimeout(teamStats *TeamStats, teamInfo *sslproto.Referee_TeamInfo, availableTime uint32, availableTimeouts uint32) {
+func addTimeout(teamStats *TeamStats, teamInfo *referee.Referee_TeamInfo, availableTime uint32, availableTimeouts uint32) {
 	if *teamInfo.TimeoutTime > availableTime {
 		log.Printf("Timeout time > available: %v > %v", *teamInfo.TimeoutTime, availableTime)
 		if availableTime == 150_000_000 {
@@ -111,19 +111,19 @@ func addTimeout(teamStats *TeamStats, teamInfo *sslproto.Referee_TeamInfo, avail
 	teamStats.TimeoutsLeft += timeouts
 }
 
-func (m *MetaDataProcessor) OnNewRefereeMessage(matchStats *MatchStats, referee *sslproto.Referee) {
+func (m *MetaDataProcessor) OnNewRefereeMessage(matchStats *MatchStats, referee *referee.Referee) {
 	m.updateMaxActiveYellowCards(referee.Blue, matchStats.TeamStatsBlue)
 	m.updateMaxActiveYellowCards(referee.Yellow, matchStats.TeamStatsYellow)
 }
 
-func (m *MetaDataProcessor) updateMaxActiveYellowCards(teamInfo *sslproto.Referee_TeamInfo, teamStats *TeamStats) {
+func (m *MetaDataProcessor) updateMaxActiveYellowCards(teamInfo *referee.Referee_TeamInfo, teamStats *TeamStats) {
 	activeCards := int32(len(teamInfo.YellowCardTimes))
 	if teamStats.MaxActiveYellowCards < activeCards {
 		teamStats.MaxActiveYellowCards = activeCards
 	}
 }
 
-func processTeam(stats *TeamStats, team *sslproto.Referee_TeamInfo, otherTeam *sslproto.Referee_TeamInfo) {
+func processTeam(stats *TeamStats, team *referee.Referee_TeamInfo, otherTeam *referee.Referee_TeamInfo) {
 	stats.Name = *team.Name
 	stats.Goals = int32(*team.Score)
 	stats.ConcededGoals = int32(*otherTeam.Score)

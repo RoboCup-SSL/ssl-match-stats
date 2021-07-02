@@ -1,7 +1,7 @@
 package csvexport
 
 import (
-	"github.com/RoboCup-SSL/ssl-go-tools/pkg/sslproto"
+	"github.com/RoboCup-SSL/ssl-match-stats/internal/referee"
 	"github.com/RoboCup-SSL/ssl-match-stats/pkg/csvexport/aggregator"
 	"github.com/RoboCup-SSL/ssl-match-stats/pkg/matchstats"
 	"math"
@@ -13,7 +13,7 @@ func WriteGameEventDurationStats(matchStatsCollection *matchstats.MatchStatsColl
 
 	var records [][]string
 	for _, matchStats := range matchStatsCollection.MatchStats {
-		for _, eventName := range sslproto.GameEventType_name {
+		for _, eventName := range referee.GameEvent_Type_name {
 			durations := aggregator.AggregateGameEventDurations(matchStats)
 			record := []string{
 				matchStats.Name,
@@ -37,7 +37,7 @@ func WriteGameEventDurationStatsAggregated(aggregator *aggregator.Aggregator, fi
 	header := []string{"Game Event", "Duration Sum", "Min Duration", "Median Duration", "Avg Duration", "Max Duration", "Count"}
 
 	var records [][]string
-	for _, eventName := range sslproto.GameEventType_name {
+	for _, eventName := range referee.GameEvent_Type_name {
 		record := []string{
 			eventName,
 			uintToStr(aggregator.GameEventDurations[eventName].Duration),

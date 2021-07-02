@@ -47,7 +47,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	if err := exporter.WriteMatches(&a.Collection, tournamentId, *division); err != nil {
+	if err := exporter.WriteMatches(a.Collection, tournamentId, *division); err != nil {
 		log.Fatal("Could not write matches: ", err)
 	}
 }

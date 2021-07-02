@@ -1,7 +1,7 @@
 package matchstats
 
 import (
-	"github.com/RoboCup-SSL/ssl-go-tools/pkg/sslproto"
+	"github.com/RoboCup-SSL/ssl-match-stats/internal/referee"
 	"log"
 	"reflect"
 )
@@ -15,19 +15,19 @@ func NewGamePhaseDetector() *GamePhaseDetector {
 	return &GamePhaseDetector{gamePaused: false}
 }
 
-func (d *GamePhaseDetector) startNewPhase(matchStats *MatchStats, referee *sslproto.Referee, phaseType GamePhaseType) {
-	d.stopCurrentPhase(matchStats, referee)
+func (d *GamePhaseDetector) startNewPhase(matchStats *MatchStats, ref *referee.Referee, phaseType GamePhaseType) {
+	d.stopCurrentPhase(matchStats, ref)
 	prevPhase := d.currentPhase
 	d.currentPhase = new(GamePhase)
 	d.currentPhase.Type = phaseType
-	d.currentPhase.StartTime = *referee.PacketTimestamp
-	d.currentPhase.Stage = mapProtoStageToStageType(*referee.Stage)
-	if referee.StageTimeLeft != nil {
-		d.currentPhase.StageTimeLeftEntry = *referee.StageTimeLeft
+	d.currentPhase.StartTime = *ref.PacketTimestamp
+	d.currentPhase.Stage = mapProtoStageToStageType(*ref.Stage)
+	if ref.StageTimeLeft != nil {
+		d.currentPhase.StageTimeLeftEntry = *ref.StageTimeLeft
 	}
-	d.currentPhase.CommandEntry = mapProtoCommandToCommand(*referee.Command)
-	d.currentPhase.ForTeam = mapProtoCommandToTeam(*referee.Command)
-	d.currentPhase.GameEventsEntry = referee.GameEvents[:]
+	d.currentPhase.CommandEntry = mapProtoCommandToCommand(*ref.Command)
+	d.currentPhase.ForTeam = mapProtoCommandToTeam(*ref.Command)
+	d.currentPhase.GameEventsEntry = ref.GameEvents[:]
 
 	if prevPhase != nil {
 		d.currentPhase.CommandPrev = prevPhase.CommandEntry
@@ -40,83 +40,83 @@ func (d *GamePhaseDetector) startNewPhase(matchStats *MatchStats, referee *sslpr
 	}
 }
 
-func (d *GamePhaseDetector) stopCurrentPhase(matchStats *MatchStats, referee *sslproto.Referee) {
+func (d *GamePhaseDetector) stopCurrentPhase(matchStats *MatchStats, ref *referee.Referee) {
 	if d.currentPhase == nil {
 		return
 	}
-	d.currentPhase.EndTime = *referee.PacketTimestamp
+	d.currentPhase.EndTime = *ref.PacketTimestamp
 	start := packetTimeStampToTime(d.currentPhase.StartTime)
 	end := packetTimeStampToTime(d.currentPhase.EndTime)
 	d.currentPhase.Duration = uint32(end.Sub(start).Microseconds())
 	matchStats.GamePhases = append(matchStats.GamePhases, d.currentPhase)
-	d.currentPhase.CommandExit = mapProtoCommandToCommand(*referee.Command)
-	if referee.NextCommand != nil && int32(*referee.NextCommand) >= 0 {
-		d.currentPhase.NextCommandProposed = mapProtoCommandToCommand(*referee.NextCommand)
+	d.currentPhase.CommandExit = mapProtoCommandToCommand(*ref.Command)
+	if ref.NextCommand != nil && int32(*ref.NextCommand) >= 0 {
+		d.currentPhase.NextCommandProposed = mapProtoCommandToCommand(*ref.NextCommand)
 	}
-	d.currentPhase.GameEventsExit = referee.GameEvents[:]
-	if referee.StageTimeLeft != nil {
-		d.currentPhase.StageTimeLeftExit = *referee.StageTimeLeft
+	d.currentPhase.GameEventsExit = ref.GameEvents[:]
+	if ref.StageTimeLeft != nil {
+		d.currentPhase.StageTimeLeftExit = *ref.StageTimeLeft
 	}
 }
 
-func (d *GamePhaseDetector) OnNewStage(matchStats *MatchStats, referee *sslproto.Referee) {
-	switch *referee.Stage {
-	case sslproto.Referee_NORMAL_FIRST_HALF_PRE,
-		sslproto.Referee_NORMAL_FIRST_HALF,
-		sslproto.Referee_NORMAL_SECOND_HALF_PRE,
-		sslproto.Referee_NORMAL_SECOND_HALF,
-		sslproto.Referee_EXTRA_FIRST_HALF_PRE,
-		sslproto.Referee_EXTRA_SECOND_HALF_PRE,
-		sslproto.Referee_EXTRA_FIRST_HALF,
-		sslproto.Referee_EXTRA_SECOND_HALF,
-		sslproto.Referee_PENALTY_SHOOTOUT:
+func (d *GamePhaseDetector) OnNewStage(matchStats *MatchStats, ref *referee.Referee) {
+	switch *ref.Stage {
+	case referee.Referee_NORMAL_FIRST_HALF_PRE,
+		referee.Referee_NORMAL_FIRST_HALF,
+		referee.Referee_NORMAL_SECOND_HALF_PRE,
+		referee.Referee_NORMAL_SECOND_HALF,
+		referee.Referee_EXTRA_FIRST_HALF_PRE,
+		referee.Referee_EXTRA_SECOND_HALF_PRE,
+		referee.Referee_EXTRA_FIRST_HALF,
+		referee.Referee_EXTRA_SECOND_HALF,
+		referee.Referee_PENALTY_SHOOTOUT:
 		d.gamePaused = false
 		break
-	case sslproto.Referee_NORMAL_HALF_TIME,
-		sslproto.Referee_EXTRA_TIME_BREAK,
-		sslproto.Referee_EXTRA_HALF_TIME,
-		sslproto.Referee_PENALTY_SHOOTOUT_BREAK:
+	case referee.Referee_NORMAL_HALF_TIME,
+		referee.Referee_EXTRA_TIME_BREAK,
+		referee.Referee_EXTRA_HALF_TIME,
+		referee.Referee_PENALTY_SHOOTOUT_BREAK:
 		d.gamePaused = true
-		d.startNewPhase(matchStats, referee, GamePhaseType_PHASE_BREAK)
+		d.startNewPhase(matchStats, ref, GamePhaseType_PHASE_BREAK)
 		break
-	case sslproto.Referee_POST_GAME:
-		d.startNewPhase(matchStats, referee, GamePhaseType_PHASE_POST_GAME)
+	case referee.Referee_POST_GAME:
+		d.startNewPhase(matchStats, ref, GamePhaseType_PHASE_POST_GAME)
 		break
 	default:
-		log.Println("Unknown stage: ", *referee.Stage)
+		log.Println("Unknown stage: ", *ref.Stage)
 	}
 }
 
-func (d *GamePhaseDetector) OnNewCommand(matchStats *MatchStats, referee *sslproto.Referee) {
+func (d *GamePhaseDetector) OnNewCommand(matchStats *MatchStats, ref *referee.Referee) {
 	if d.gamePaused {
 		return
 	}
 
-	phaseType := mapProtoCommandToGamePhaseType(*referee.Command)
+	phaseType := mapProtoCommandToGamePhaseType(*ref.Command)
 	if phaseType != GamePhaseType_PHASE_UNKNOWN {
-		d.startNewPhase(matchStats, referee, phaseType)
+		d.startNewPhase(matchStats, ref, phaseType)
 	}
 }
 
-func (d *GamePhaseDetector) OnLastRefereeMessage(matchStats *MatchStats, referee *sslproto.Referee) {
-	d.stopCurrentPhase(matchStats, referee)
+func (d *GamePhaseDetector) OnLastRefereeMessage(matchStats *MatchStats, ref *referee.Referee) {
+	d.stopCurrentPhase(matchStats, ref)
 }
 
-func (d *GamePhaseDetector) OnNewRefereeMessage(matchStats *MatchStats, referee *sslproto.Referee) {
+func (d *GamePhaseDetector) OnNewRefereeMessage(_ *MatchStats, ref *referee.Referee) {
 	if d.currentPhase == nil {
 		return
 	}
-	d.currentPhase.GameEventsApplied = processGameEvents(d.currentPhase.GameEventsApplied, referee.GameEvents, *referee.PacketTimestamp)
+	d.currentPhase.GameEventsApplied = processGameEvents(d.currentPhase.GameEventsApplied, ref.GameEvents, *ref.PacketTimestamp)
 
-	var proposedGameEvents []*sslproto.GameEvent
-	for _, gameEvent := range referee.ProposedGameEvents {
-		proposedGameEvents = append(proposedGameEvents, gameEvent.GameEvent)
+	var proposedGameEvents []*referee.GameEvent
+	for _, gameEvent := range ref.GameEventProposals {
+		proposedGameEvents = append(proposedGameEvents, gameEvent.GameEvent...)
 	}
 
-	d.currentPhase.GameEventsProposed = processGameEvents(d.currentPhase.GameEventsProposed, proposedGameEvents, *referee.PacketTimestamp)
+	d.currentPhase.GameEventsProposed = processGameEvents(d.currentPhase.GameEventsProposed, proposedGameEvents, *ref.PacketTimestamp)
 }
 
-func processGameEvents(gameEvents []*GameEventTimed, newGameEvents []*sslproto.GameEvent, timestamp uint64) []*GameEventTimed {
+func processGameEvents(gameEvents []*GameEventTimed, newGameEvents []*referee.GameEvent, timestamp uint64) []*GameEventTimed {
 
 	for _, presentGameEvent := range gameEvents {
 		if !containsGameEvent(presentGameEvent.GameEvent, newGameEvents) {
@@ -134,7 +134,7 @@ func processGameEvents(gameEvents []*GameEventTimed, newGameEvents []*sslproto.G
 	return gameEvents
 }
 
-func containsGameEventTimed(gameEvent *sslproto.GameEvent, gameEvents []*GameEventTimed) bool {
+func containsGameEventTimed(gameEvent *referee.GameEvent, gameEvents []*GameEventTimed) bool {
 	for _, existingEvent := range gameEvents {
 		if reflect.DeepEqual(existingEvent.GameEvent, gameEvent) {
 			return true
@@ -143,7 +143,7 @@ func containsGameEventTimed(gameEvent *sslproto.GameEvent, gameEvents []*GameEve
 	return false
 }
 
-func containsGameEvent(gameEvent *sslproto.GameEvent, gameEvents []*sslproto.GameEvent) bool {
+func containsGameEvent(gameEvent *referee.GameEvent, gameEvents []*referee.GameEvent) bool {
 	for _, existingEvent := range gameEvents {
 		if reflect.DeepEqual(existingEvent, gameEvent) {
 			return true
@@ -152,134 +152,137 @@ func containsGameEvent(gameEvent *sslproto.GameEvent, gameEvents []*sslproto.Gam
 	return false
 }
 
-func mapProtoCommandToCommand(command sslproto.Referee_Command) *Command {
+func mapProtoCommandToCommand(command referee.Referee_Command) *Command {
 	return &Command{
 		Type:    mapProtoCommandToCommandType(command),
 		ForTeam: mapProtoCommandToTeam(command),
 	}
 }
 
-func mapProtoCommandToCommandType(command sslproto.Referee_Command) CommandType {
+//goland:noinspection GoDeprecation
+func mapProtoCommandToCommandType(command referee.Referee_Command) CommandType {
 	switch command {
-	case sslproto.Referee_HALT:
+	case referee.Referee_HALT:
 		return CommandType_COMMAND_HALT
-	case sslproto.Referee_STOP:
+	case referee.Referee_STOP:
 		return CommandType_COMMAND_STOP
-	case sslproto.Referee_NORMAL_START:
+	case referee.Referee_NORMAL_START:
 		return CommandType_COMMAND_NORMAL_START
-	case sslproto.Referee_FORCE_START:
+	case referee.Referee_FORCE_START:
 		return CommandType_COMMAND_FORCE_START
-	case sslproto.Referee_PREPARE_KICKOFF_YELLOW,
-		sslproto.Referee_PREPARE_KICKOFF_BLUE:
+	case referee.Referee_PREPARE_KICKOFF_YELLOW,
+		referee.Referee_PREPARE_KICKOFF_BLUE:
 		return CommandType_COMMAND_PREPARE_KICKOFF
-	case sslproto.Referee_PREPARE_PENALTY_YELLOW,
-		sslproto.Referee_PREPARE_PENALTY_BLUE:
+	case referee.Referee_PREPARE_PENALTY_YELLOW,
+		referee.Referee_PREPARE_PENALTY_BLUE:
 		return CommandType_COMMAND_PREPARE_PENALTY
-	case sslproto.Referee_DIRECT_FREE_YELLOW,
-		sslproto.Referee_DIRECT_FREE_BLUE:
+	case referee.Referee_DIRECT_FREE_YELLOW,
+		referee.Referee_DIRECT_FREE_BLUE:
 		return CommandType_COMMAND_DIRECT_FREE
-	case sslproto.Referee_INDIRECT_FREE_YELLOW,
-		sslproto.Referee_INDIRECT_FREE_BLUE:
+	case referee.Referee_INDIRECT_FREE_YELLOW,
+		referee.Referee_INDIRECT_FREE_BLUE:
 		return CommandType_COMMAND_INDIRECT_FREE
-	case sslproto.Referee_TIMEOUT_YELLOW,
-		sslproto.Referee_TIMEOUT_BLUE:
+	case referee.Referee_TIMEOUT_YELLOW,
+		referee.Referee_TIMEOUT_BLUE:
 		return CommandType_COMMAND_TIMEOUT
-	case sslproto.Referee_BALL_PLACEMENT_YELLOW,
-		sslproto.Referee_BALL_PLACEMENT_BLUE:
+	case referee.Referee_BALL_PLACEMENT_YELLOW,
+		referee.Referee_BALL_PLACEMENT_BLUE:
 		return CommandType_COMMAND_BALL_PLACEMENT
-	case sslproto.Referee_GOAL_YELLOW, sslproto.Referee_GOAL_BLUE:
+	case referee.Referee_GOAL_YELLOW, referee.Referee_GOAL_BLUE:
 		return CommandType_COMMAND_GOAL
 	}
 	log.Printf("Command %v not mapped to any command type", command)
 	return CommandType_COMMAND_UNKNOWN
 }
 
-func mapProtoCommandToGamePhaseType(command sslproto.Referee_Command) GamePhaseType {
+//goland:noinspection GoDeprecation
+func mapProtoCommandToGamePhaseType(command referee.Referee_Command) GamePhaseType {
 	switch command {
-	case sslproto.Referee_HALT:
+	case referee.Referee_HALT:
 		return GamePhaseType_PHASE_HALT
-	case sslproto.Referee_STOP:
+	case referee.Referee_STOP:
 		return GamePhaseType_PHASE_STOP
-	case sslproto.Referee_NORMAL_START:
+	case referee.Referee_NORMAL_START:
 		return GamePhaseType_PHASE_RUNNING
-	case sslproto.Referee_FORCE_START:
+	case referee.Referee_FORCE_START:
 		return GamePhaseType_PHASE_RUNNING
-	case sslproto.Referee_PREPARE_KICKOFF_YELLOW, sslproto.Referee_PREPARE_KICKOFF_BLUE:
+	case referee.Referee_PREPARE_KICKOFF_YELLOW, referee.Referee_PREPARE_KICKOFF_BLUE:
 		return GamePhaseType_PHASE_PREPARE_KICKOFF
-	case sslproto.Referee_PREPARE_PENALTY_YELLOW, sslproto.Referee_PREPARE_PENALTY_BLUE:
+	case referee.Referee_PREPARE_PENALTY_YELLOW, referee.Referee_PREPARE_PENALTY_BLUE:
 		return GamePhaseType_PHASE_PREPARE_PENALTY
-	case sslproto.Referee_DIRECT_FREE_YELLOW, sslproto.Referee_DIRECT_FREE_BLUE:
+	case referee.Referee_DIRECT_FREE_YELLOW, referee.Referee_DIRECT_FREE_BLUE:
 		return GamePhaseType_PHASE_RUNNING
-	case sslproto.Referee_INDIRECT_FREE_YELLOW, sslproto.Referee_INDIRECT_FREE_BLUE:
+	case referee.Referee_INDIRECT_FREE_YELLOW, referee.Referee_INDIRECT_FREE_BLUE:
 		return GamePhaseType_PHASE_RUNNING
-	case sslproto.Referee_TIMEOUT_YELLOW, sslproto.Referee_TIMEOUT_BLUE:
+	case referee.Referee_TIMEOUT_YELLOW, referee.Referee_TIMEOUT_BLUE:
 		return GamePhaseType_PHASE_TIMEOUT
-	case sslproto.Referee_BALL_PLACEMENT_YELLOW, sslproto.Referee_BALL_PLACEMENT_BLUE:
+	case referee.Referee_BALL_PLACEMENT_YELLOW, referee.Referee_BALL_PLACEMENT_BLUE:
 		return GamePhaseType_PHASE_BALL_PLACEMENT
-	case sslproto.Referee_GOAL_YELLOW, sslproto.Referee_GOAL_BLUE:
+	case referee.Referee_GOAL_YELLOW, referee.Referee_GOAL_BLUE:
 		return GamePhaseType_PHASE_UNKNOWN
 	}
 	log.Printf("Command %v not mapped to any phase type", command)
 	return GamePhaseType_PHASE_UNKNOWN
 }
 
-func mapProtoCommandToTeam(command sslproto.Referee_Command) TeamColor {
+//goland:noinspection GoDeprecation
+func mapProtoCommandToTeam(command referee.Referee_Command) TeamColor {
 	switch command {
-	case sslproto.Referee_HALT,
-		sslproto.Referee_STOP,
-		sslproto.Referee_NORMAL_START,
-		sslproto.Referee_FORCE_START:
+	case referee.Referee_HALT,
+		referee.Referee_STOP,
+		referee.Referee_NORMAL_START,
+		referee.Referee_FORCE_START:
 		return TeamColor_TEAM_NONE
-	case sslproto.Referee_PREPARE_KICKOFF_YELLOW,
-		sslproto.Referee_PREPARE_PENALTY_YELLOW,
-		sslproto.Referee_DIRECT_FREE_YELLOW,
-		sslproto.Referee_INDIRECT_FREE_YELLOW,
-		sslproto.Referee_TIMEOUT_YELLOW,
-		sslproto.Referee_BALL_PLACEMENT_YELLOW,
-		sslproto.Referee_GOAL_YELLOW:
+	case referee.Referee_PREPARE_KICKOFF_YELLOW,
+		referee.Referee_PREPARE_PENALTY_YELLOW,
+		referee.Referee_DIRECT_FREE_YELLOW,
+		referee.Referee_INDIRECT_FREE_YELLOW,
+		referee.Referee_TIMEOUT_YELLOW,
+		referee.Referee_BALL_PLACEMENT_YELLOW,
+		referee.Referee_GOAL_YELLOW:
 		return TeamColor_TEAM_YELLOW
-	case sslproto.Referee_PREPARE_KICKOFF_BLUE,
-		sslproto.Referee_PREPARE_PENALTY_BLUE,
-		sslproto.Referee_DIRECT_FREE_BLUE,
-		sslproto.Referee_INDIRECT_FREE_BLUE,
-		sslproto.Referee_TIMEOUT_BLUE,
-		sslproto.Referee_BALL_PLACEMENT_BLUE,
-		sslproto.Referee_GOAL_BLUE:
+	case referee.Referee_PREPARE_KICKOFF_BLUE,
+		referee.Referee_PREPARE_PENALTY_BLUE,
+		referee.Referee_DIRECT_FREE_BLUE,
+		referee.Referee_INDIRECT_FREE_BLUE,
+		referee.Referee_TIMEOUT_BLUE,
+		referee.Referee_BALL_PLACEMENT_BLUE,
+		referee.Referee_GOAL_BLUE:
 		return TeamColor_TEAM_BLUE
 	}
 	log.Printf("Command %v not mapped to any team", command)
 	return TeamColor_TEAM_UNKNOWN
 }
 
-func mapProtoStageToStageType(stage sslproto.Referee_Stage) StageType {
+func mapProtoStageToStageType(stage referee.Referee_Stage) StageType {
 	switch stage {
-	case sslproto.Referee_NORMAL_FIRST_HALF_PRE:
+	case referee.Referee_NORMAL_FIRST_HALF_PRE:
 		return StageType_STAGE_NORMAL_FIRST_HALF_PRE
-	case sslproto.Referee_NORMAL_FIRST_HALF:
+	case referee.Referee_NORMAL_FIRST_HALF:
 		return StageType_STAGE_NORMAL_FIRST_HALF
-	case sslproto.Referee_NORMAL_HALF_TIME:
+	case referee.Referee_NORMAL_HALF_TIME:
 		return StageType_STAGE_NORMAL_HALF_TIME
-	case sslproto.Referee_NORMAL_SECOND_HALF_PRE:
+	case referee.Referee_NORMAL_SECOND_HALF_PRE:
 		return StageType_STAGE_NORMAL_SECOND_HALF_PRE
-	case sslproto.Referee_NORMAL_SECOND_HALF:
+	case referee.Referee_NORMAL_SECOND_HALF:
 		return StageType_STAGE_NORMAL_SECOND_HALF
-	case sslproto.Referee_EXTRA_TIME_BREAK:
+	case referee.Referee_EXTRA_TIME_BREAK:
 		return StageType_STAGE_EXTRA_TIME_BREAK
-	case sslproto.Referee_EXTRA_FIRST_HALF_PRE:
+	case referee.Referee_EXTRA_FIRST_HALF_PRE:
 		return StageType_STAGE_EXTRA_FIRST_HALF_PRE
-	case sslproto.Referee_EXTRA_FIRST_HALF:
+	case referee.Referee_EXTRA_FIRST_HALF:
 		return StageType_STAGE_EXTRA_FIRST_HALF
-	case sslproto.Referee_EXTRA_HALF_TIME:
+	case referee.Referee_EXTRA_HALF_TIME:
 		return StageType_STAGE_EXTRA_HALF_TIME
-	case sslproto.Referee_EXTRA_SECOND_HALF_PRE:
+	case referee.Referee_EXTRA_SECOND_HALF_PRE:
 		return StageType_STAGE_EXTRA_SECOND_HALF_PRE
-	case sslproto.Referee_EXTRA_SECOND_HALF:
+	case referee.Referee_EXTRA_SECOND_HALF:
 		return StageType_STAGE_EXTRA_SECOND_HALF
-	case sslproto.Referee_PENALTY_SHOOTOUT_BREAK:
+	case referee.Referee_PENALTY_SHOOTOUT_BREAK:
 		return StageType_STAGE_PENALTY_SHOOTOUT_BREAK
-	case sslproto.Referee_PENALTY_SHOOTOUT:
+	case referee.Referee_PENALTY_SHOOTOUT:
 		return StageType_STAGE_PENALTY_SHOOTOUT
-	case sslproto.Referee_POST_GAME:
+	case referee.Referee_POST_GAME:
 		return StageType_STAGE_POST_GAME
 	}
 	return StageType_STAGE_UNKNOWN

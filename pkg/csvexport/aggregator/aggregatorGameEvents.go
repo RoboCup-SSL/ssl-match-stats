@@ -1,7 +1,7 @@
 package aggregator
 
 import (
-	"github.com/RoboCup-SSL/ssl-go-tools/pkg/sslproto"
+	"github.com/RoboCup-SSL/ssl-match-stats/internal/referee"
 	"math"
 	"sort"
 )
@@ -11,7 +11,7 @@ func (a *Aggregator) AggregateGameEvents() error {
 	a.GameEventDurations = map[string]*DurationStats{}
 	durations := map[string][]int{}
 
-	for _, name := range sslproto.GameEventType_name {
+	for _, name := range referee.GameEvent_Type_name {
 		a.GameEventDurations[name] = new(DurationStats)
 	}
 
@@ -29,7 +29,7 @@ func (a *Aggregator) AggregateGameEvents() error {
 		}
 	}
 
-	for _, eventName := range sslproto.GameEventType_name {
+	for _, eventName := range referee.GameEvent_Type_name {
 		stats := a.GameEventDurations[eventName]
 		eventDurations := durations[eventName]
 		if len(eventDurations) > 0 {

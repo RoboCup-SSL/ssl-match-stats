@@ -1,7 +1,7 @@
 package aggregator
 
 import (
-	"github.com/RoboCup-SSL/ssl-go-tools/pkg/sslproto"
+	"github.com/RoboCup-SSL/ssl-match-stats/internal/referee"
 	"github.com/RoboCup-SSL/ssl-match-stats/pkg/matchstats"
 	"log"
 	"math"
@@ -9,13 +9,13 @@ import (
 )
 
 type Aggregator struct {
-	Collection         matchstats.MatchStatsCollection
+	Collection         *matchstats.MatchStatsCollection
 	GamePhaseDurations map[string]*DurationStats
 	GameEventDurations map[string]*DurationStats
 	TeamStats          map[string]*matchstats.TeamStats
 }
 
-func NewAggregator(collection matchstats.MatchStatsCollection) *Aggregator {
+func NewAggregator(collection *matchstats.MatchStatsCollection) *Aggregator {
 	generator := new(Aggregator)
 	generator.Collection = collection
 	return generator
@@ -81,7 +81,7 @@ func AggregateGameEventDurations(matchStats *matchstats.MatchStats) map[string]*
 	gameEventDurations := map[string]*DurationStats{}
 	durations := map[string][]int{}
 
-	for _, p := range sslproto.GameEventType_name {
+	for _, p := range referee.GameEvent_Type_name {
 		gameEventDurations[p] = new(DurationStats)
 		gameEventDurations[p].Duration = 0
 	}
@@ -98,7 +98,7 @@ func AggregateGameEventDurations(matchStats *matchstats.MatchStats) map[string]*
 		durations[eventName] = append(durations[eventName], int(phase.Duration))
 	}
 
-	for _, eventName := range sslproto.GameEventType_name {
+	for _, eventName := range referee.GameEvent_Type_name {
 		stats := gameEventDurations[eventName]
 		eventDurations := durations[eventName]
 		if len(eventDurations) > 0 {
