@@ -2,7 +2,6 @@ package matchstats
 
 import (
 	"github.com/RoboCup-SSL/ssl-match-stats/internal/referee"
-	"log"
 	"math"
 	"time"
 )
@@ -28,10 +27,17 @@ func NewMetaDataProcessor() *MetaDataProcessor {
 }
 
 func (m *MetaDataProcessor) OnNewStage(matchStats *MatchStats, ref *referee.Referee) {
-	if *ref.Stage == referee.Referee_EXTRA_TIME_BREAK {
-		addTimeout(matchStats.TeamStatsYellow, ref.Yellow, m.timeoutTimeNormal, m.timeoutsNormal)
-		addTimeout(matchStats.TeamStatsBlue, ref.Blue, m.timeoutTimeNormal, m.timeoutsNormal)
+	switch *ref.Stage {
+	case referee.Referee_EXTRA_TIME_BREAK,
+		referee.Referee_POST_GAME:
+		addTimeout(matchStats.TeamStatsYellow, ref.Yellow)
+		addTimeout(matchStats.TeamStatsBlue, ref.Blue)
 	}
+
+	if *ref.Stage == referee.Referee_EXTRA_FIRST_HALF {
+		matchStats.ExtraTime = true
+	}
+
 	if *ref.Stage == referee.Referee_PENALTY_SHOOTOUT {
 		matchStats.Shootout = true
 	}
@@ -65,14 +71,10 @@ func (m *MetaDataProcessor) OnLastRefereeMessage(matchStats *MatchStats, ref *re
 	endTime := packetTimeStampToTime(*ref.PacketTimestamp)
 	matchStats.MatchDuration = uint32(endTime.Sub(m.startTime).Microseconds())
 
-	if uint32(*ref.Stage) <= uint32(referee.Referee_NORMAL_SECOND_HALF) {
-		addTimeout(matchStats.TeamStatsYellow, ref.Yellow, m.timeoutTimeNormal, m.timeoutsNormal)
-		addTimeout(matchStats.TeamStatsBlue, ref.Blue, m.timeoutTimeNormal, m.timeoutsNormal)
-		matchStats.ExtraTime = false
-	} else if uint32(*ref.Stage) < uint32(referee.Referee_POST_GAME) {
-		addTimeout(matchStats.TeamStatsYellow, ref.Yellow, m.timeoutTimeExtra, m.timeoutsExtra)
-		addTimeout(matchStats.TeamStatsBlue, ref.Blue, m.timeoutTimeExtra, m.timeoutsExtra)
-		matchStats.ExtraTime = true
+	// if the log file does not end with POST_GAME, we have to keep track of the remaining timeouts
+	if uint32(*ref.Stage) != uint32(referee.Referee_POST_GAME) {
+		addTimeout(matchStats.TeamStatsYellow, ref.Yellow)
+		addTimeout(matchStats.TeamStatsBlue, ref.Blue)
 	}
 
 	for _, gamePhase := range matchStats.GamePhases {
@@ -84,31 +86,28 @@ func (m *MetaDataProcessor) OnLastRefereeMessage(matchStats *MatchStats, ref *re
 				matchStats.TeamStatsYellow.BallPlacementTime += gamePhase.Duration
 				matchStats.TeamStatsYellow.BallPlacements++
 			}
+		} else if gamePhase.Type == GamePhaseType_PHASE_TIMEOUT {
+			if gamePhase.ForTeam == TeamColor_TEAM_BLUE {
+				matchStats.TeamStatsBlue.TimeoutsTaken++
+				matchStats.TeamStatsBlue.TimeoutTime += gamePhase.Duration
+			} else if gamePhase.ForTeam == TeamColor_TEAM_YELLOW {
+				matchStats.TeamStatsYellow.TimeoutsTaken++
+				matchStats.TeamStatsYellow.TimeoutTime += gamePhase.Duration
+			}
 		}
 	}
 }
 
-func addTimeout(teamStats *TeamStats, teamInfo *referee.Referee_TeamInfo, availableTime uint32, availableTimeouts uint32) {
-	if *teamInfo.TimeoutTime > availableTime {
-		log.Printf("Timeout time > available: %v > %v", *teamInfo.TimeoutTime, availableTime)
-		if availableTime == 150_000_000 {
-			availableTime = 300_000_000
-			log.Println("Fixing known bug: In 2019, timeout time in extra halves was 5min instead of 2.5min")
-		}
-	}
-
-	var timeouts int32
+func addTimeout(teamStats *TeamStats, teamInfo *referee.Referee_TeamInfo) {
+	var timeoutsLeft int32
 	if *teamInfo.Timeouts > 100 {
 		// workaround for integer overflow
-		timeouts = int32(int64(*teamInfo.Timeouts) - math.MaxUint32)
+		timeoutsLeft = int32(int64(*teamInfo.Timeouts) - math.MaxUint32)
 	} else {
-		timeouts = int32(*teamInfo.Timeouts)
+		timeoutsLeft = int32(*teamInfo.Timeouts)
 	}
 
-	teamStats.TimeoutTime += availableTime - *teamInfo.TimeoutTime
-	teamStats.TimeoutsTaken += int32(availableTimeouts) - timeouts
-
-	teamStats.TimeoutsLeft += timeouts
+	teamStats.TimeoutsLeft += timeoutsLeft
 }
 
 func (m *MetaDataProcessor) OnNewRefereeMessage(matchStats *MatchStats, referee *referee.Referee) {
