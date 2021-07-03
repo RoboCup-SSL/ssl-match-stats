@@ -69,7 +69,7 @@ func (m *MetaDataProcessor) OnLastRefereeMessage(matchStats *MatchStats, ref *re
 		addTimeout(matchStats.TeamStatsYellow, ref.Yellow, m.timeoutTimeNormal, m.timeoutsNormal)
 		addTimeout(matchStats.TeamStatsBlue, ref.Blue, m.timeoutTimeNormal, m.timeoutsNormal)
 		matchStats.ExtraTime = false
-	} else {
+	} else if uint32(*ref.Stage) < uint32(referee.Referee_POST_GAME) {
 		addTimeout(matchStats.TeamStatsYellow, ref.Yellow, m.timeoutTimeExtra, m.timeoutsExtra)
 		addTimeout(matchStats.TeamStatsBlue, ref.Blue, m.timeoutTimeExtra, m.timeoutsExtra)
 		matchStats.ExtraTime = true
