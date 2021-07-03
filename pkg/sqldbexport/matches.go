@@ -24,6 +24,7 @@ func (p *SqlDbExporter) FindMatchId(logFileName string) *uuid.UUID {
 
 func (p *SqlDbExporter) WriteMatches(matchStatsCollection *matchstats.MatchStatsCollection, tournamentId *uuid.UUID, division string) error {
 	for _, matchStats := range matchStatsCollection.MatchStats {
+		log.Println("Writing ", matchStats.Name)
 		logFileName := matchStats.Name
 		matchId := p.FindMatchId(logFileName)
 		if matchId == nil {
