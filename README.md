@@ -17,7 +17,7 @@ You need to install following dependencies first:
 Use go get to install all packages / executables:
 
 ```
-go get -u github.com/RoboCup-SSL/ssl-match-stats/...
+go install github.com/RoboCup-SSL/ssl-match-stats/...@latest
 ```
 
 ## Run
