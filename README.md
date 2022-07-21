@@ -65,6 +65,9 @@ The command requires some parameters:
 ssl-match-stats-db -sqlDbSource postgres://user:password@host:port/db-name -tournament RoboCup2019 -division DivA
 ```
 
+If you want to evaluate the start time offset between scheduled match start time and actual start time,
+you need to add the scheduled time into `matches.start_time_planned` manually.
+
 ## Development
 
 ### Database
