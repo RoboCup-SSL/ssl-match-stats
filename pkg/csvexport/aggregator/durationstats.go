@@ -1,11 +1,11 @@
 package aggregator
 
 type DurationStats struct {
-	Duration         uint32
-	DurationMin      uint32
-	DurationMax      uint32
-	DurationMedian   uint32
-	DurationAvg      uint32
+	Duration         int64
+	DurationMin      int64
+	DurationMax      int64
+	DurationMedian   int64
+	DurationAvg      int64
 	DurationRelative float32
-	Count            uint32
+	Count            int64
 }

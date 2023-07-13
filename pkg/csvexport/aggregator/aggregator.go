@@ -38,7 +38,7 @@ func (a *Aggregator) Aggregate() error {
 func AggregateGamePhaseDurations(matchStats *matchstats.MatchStats) map[string]*DurationStats {
 
 	gamePhaseDurations := map[string]*DurationStats{}
-	durations := map[string][]int{}
+	durations := map[string][]int64{}
 
 	for _, phaseName := range matchstats.GamePhaseType_name {
 		gamePhaseDurations[phaseName] = new(DurationStats)
@@ -48,22 +48,22 @@ func AggregateGamePhaseDurations(matchStats *matchstats.MatchStats) map[string]*
 		phaseName := (*phase).Type.String()
 		gamePhaseDurations[phaseName].Duration += phase.Duration
 		gamePhaseDurations[phaseName].Count += 1
-		durations[phaseName] = append(durations[phaseName], int(phase.Duration))
+		durations[phaseName] = append(durations[phaseName], phase.Duration)
 	}
 
 	for _, phaseName := range matchstats.GamePhaseType_name {
 		stats := gamePhaseDurations[phaseName]
 		phaseDurations := durations[phaseName]
 		if len(phaseDurations) > 0 {
-			sort.Ints(phaseDurations)
-			stats.DurationMin = uint32(phaseDurations[0])
-			stats.DurationMax = uint32(phaseDurations[len(phaseDurations)-1])
-			stats.DurationMedian = uint32(phaseDurations[len(phaseDurations)/2])
-			stats.DurationAvg = uint32(math.Round(float64(stats.Duration) / float64(len(phaseDurations))))
+			sort.Slice(phaseDurations, func(i, j int) bool { return phaseDurations[i] < phaseDurations[j] })
+			stats.DurationMin = phaseDurations[0]
+			stats.DurationMax = phaseDurations[len(phaseDurations)-1]
+			stats.DurationMedian = phaseDurations[len(phaseDurations)/2]
+			stats.DurationAvg = int64(math.Round(float64(stats.Duration) / float64(len(phaseDurations))))
 		}
 	}
 
-	checkSum := uint32(0)
+	checkSum := int64(0)
 	for _, phaseName := range matchstats.GamePhaseType_name {
 		checkSum += gamePhaseDurations[phaseName].Duration
 		gamePhaseDurations[phaseName].DurationRelative = float32(gamePhaseDurations[phaseName].Duration) / float32(matchStats.MatchDuration)
@@ -79,7 +79,7 @@ func AggregateGamePhaseDurations(matchStats *matchstats.MatchStats) map[string]*
 func AggregateGameEventDurations(matchStats *matchstats.MatchStats) map[string]*DurationStats {
 
 	gameEventDurations := map[string]*DurationStats{}
-	durations := map[string][]int{}
+	durations := map[string][]int64{}
 
 	for _, p := range referee.GameEvent_Type_name {
 		gameEventDurations[p] = new(DurationStats)
@@ -95,18 +95,18 @@ func AggregateGameEventDurations(matchStats *matchstats.MatchStats) map[string]*
 		eventName := primaryEvent.Type.String()
 		gameEventDurations[eventName].Duration += phase.Duration
 		gameEventDurations[eventName].Count += 1
-		durations[eventName] = append(durations[eventName], int(phase.Duration))
+		durations[eventName] = append(durations[eventName], phase.Duration)
 	}
 
 	for _, eventName := range referee.GameEvent_Type_name {
 		stats := gameEventDurations[eventName]
 		eventDurations := durations[eventName]
 		if len(eventDurations) > 0 {
-			sort.Ints(eventDurations)
-			stats.DurationMin = uint32(eventDurations[0])
-			stats.DurationMax = uint32(eventDurations[len(eventDurations)-1])
-			stats.DurationMedian = uint32(eventDurations[len(eventDurations)/2])
-			stats.DurationAvg = uint32(math.Round(float64(stats.Duration) / float64(len(eventDurations))))
+			sort.Slice(eventDurations, func(i, j int) bool { return eventDurations[i] < eventDurations[j] })
+			stats.DurationMin = eventDurations[0]
+			stats.DurationMax = eventDurations[len(eventDurations)-1]
+			stats.DurationMedian = eventDurations[len(eventDurations)/2]
+			stats.DurationAvg = int64(math.Round(float64(stats.Duration) / float64(len(eventDurations))))
 		}
 	}
 

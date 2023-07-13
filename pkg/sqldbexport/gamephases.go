@@ -77,8 +77,8 @@ func (p *SqlDbExporter) insertGamePhase(gamePhase *matchstats.GamePhase, matchId
 		gamePhase.CommandPrev.Type.String()[8:],
 		gamePhase.CommandPrev.ForTeam.String()[5:],
 		gamePhase.Stage.String()[6:],
-		convertDuration(uint32(gamePhase.StageTimeLeftEntry)),
-		convertDuration(uint32(gamePhase.StageTimeLeftExit)),
+		convertDuration(gamePhase.StageTimeLeftEntry),
+		convertDuration(gamePhase.StageTimeLeftExit),
 	)
 
 	if err != nil {

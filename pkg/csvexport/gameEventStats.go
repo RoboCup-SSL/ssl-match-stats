@@ -18,12 +18,12 @@ func WriteGameEventDurationStats(matchStatsCollection *matchstats.MatchStatsColl
 			record := []string{
 				matchStats.Name,
 				eventName,
-				uintToStr(durations[eventName].Duration),
-				uintToStr(durations[eventName].DurationMin),
-				uintToStr(durations[eventName].DurationMedian),
-				uintToStr(uint32(math.Round(float64(durations[eventName].DurationAvg)))),
-				uintToStr(durations[eventName].DurationMax),
-				uintToStr(durations[eventName].Count),
+				int64ToStr(durations[eventName].Duration),
+				int64ToStr(durations[eventName].DurationMin),
+				int64ToStr(durations[eventName].DurationMedian),
+				int64ToStr(int64(math.Round(float64(durations[eventName].DurationAvg)))),
+				int64ToStr(durations[eventName].DurationMax),
+				int64ToStr(durations[eventName].Count),
 			}
 			records = append(records, record)
 		}
@@ -40,12 +40,12 @@ func WriteGameEventDurationStatsAggregated(aggregator *aggregator.Aggregator, fi
 	for _, eventName := range referee.GameEvent_Type_name {
 		record := []string{
 			eventName,
-			uintToStr(aggregator.GameEventDurations[eventName].Duration),
-			uintToStr(aggregator.GameEventDurations[eventName].DurationMin),
-			uintToStr(aggregator.GameEventDurations[eventName].DurationMedian),
-			uintToStr(uint32(math.Round(float64(aggregator.GameEventDurations[eventName].DurationAvg)))),
-			uintToStr(aggregator.GameEventDurations[eventName].DurationMax),
-			uintToStr(aggregator.GameEventDurations[eventName].Count),
+			int64ToStr(aggregator.GameEventDurations[eventName].Duration),
+			int64ToStr(aggregator.GameEventDurations[eventName].DurationMin),
+			int64ToStr(aggregator.GameEventDurations[eventName].DurationMedian),
+			int64ToStr(int64(math.Round(float64(aggregator.GameEventDurations[eventName].DurationAvg)))),
+			int64ToStr(aggregator.GameEventDurations[eventName].DurationMax),
+			int64ToStr(aggregator.GameEventDurations[eventName].Count),
 		}
 		records = append(records, record)
 	}

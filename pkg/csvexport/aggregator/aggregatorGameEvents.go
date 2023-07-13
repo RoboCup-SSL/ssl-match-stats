@@ -9,7 +9,7 @@ import (
 func (a *Aggregator) AggregateGameEvents() error {
 
 	a.GameEventDurations = map[string]*DurationStats{}
-	durations := map[string][]int{}
+	durations := map[string][]int64{}
 
 	for _, name := range referee.GameEvent_Type_name {
 		a.GameEventDurations[name] = new(DurationStats)
@@ -25,7 +25,7 @@ func (a *Aggregator) AggregateGameEvents() error {
 			eventName := primaryEvent.Type.String()
 			a.GameEventDurations[eventName].Duration += phase.Duration
 			a.GameEventDurations[eventName].Count += 1
-			durations[eventName] = append(durations[eventName], int(phase.Duration))
+			durations[eventName] = append(durations[eventName], phase.Duration)
 		}
 	}
 
@@ -33,11 +33,11 @@ func (a *Aggregator) AggregateGameEvents() error {
 		stats := a.GameEventDurations[eventName]
 		eventDurations := durations[eventName]
 		if len(eventDurations) > 0 {
-			sort.Ints(eventDurations)
-			stats.DurationMin = uint32(eventDurations[0])
-			stats.DurationMax = uint32(eventDurations[len(eventDurations)-1])
-			stats.DurationMedian = uint32(eventDurations[len(eventDurations)/2])
-			stats.DurationAvg = uint32(math.Round(float64(stats.Duration) / float64(len(eventDurations))))
+			sort.Slice(eventDurations, func(i, j int) bool { return eventDurations[i] < eventDurations[j] })
+			stats.DurationMin = eventDurations[0]
+			stats.DurationMax = eventDurations[len(eventDurations)-1]
+			stats.DurationMedian = eventDurations[len(eventDurations)/2]
+			stats.DurationAvg = int64(math.Round(float64(stats.Duration) / float64(len(eventDurations))))
 		}
 	}
 

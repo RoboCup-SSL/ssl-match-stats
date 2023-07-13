@@ -31,6 +31,6 @@ func convertTime(timestamp uint64) time.Time {
 	return time.Unix(startTimeSec, startTimeNsec)
 }
 
-func convertDuration(duration uint32) float64 {
-	return time.Duration(int64(duration) * 1000).Seconds()
+func convertDuration(duration int64) float64 {
+	return time.Duration(duration * 1000).Seconds()
 }

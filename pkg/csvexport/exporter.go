@@ -33,8 +33,8 @@ func writeCsv(header []string, data [][]string, filename string) error {
 	return f.Close()
 }
 
-func uintToStr(n uint32) string {
-	return strconv.FormatUint(uint64(n), 10)
+func int64ToStr(n int64) string {
+	return strconv.FormatInt(n, 10)
 }
 
 func intToStr(n int32) string {

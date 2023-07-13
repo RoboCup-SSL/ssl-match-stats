@@ -23,7 +23,7 @@ func (d *GamePhaseDetector) startNewPhase(matchStats *MatchStats, ref *referee.R
 	d.currentPhase.StartTime = *ref.PacketTimestamp
 	d.currentPhase.Stage = mapProtoStageToStageType(*ref.Stage)
 	if ref.StageTimeLeft != nil {
-		d.currentPhase.StageTimeLeftEntry = *ref.StageTimeLeft
+		d.currentPhase.StageTimeLeftEntry = int64(*ref.StageTimeLeft)
 	}
 	d.currentPhase.CommandEntry = mapProtoCommandToCommand(*ref.Command)
 	d.currentPhase.ForTeam = mapProtoCommandToTeam(*ref.Command)
@@ -47,7 +47,7 @@ func (d *GamePhaseDetector) stopCurrentPhase(matchStats *MatchStats, ref *refere
 	d.currentPhase.EndTime = *ref.PacketTimestamp
 	start := packetTimeStampToTime(d.currentPhase.StartTime)
 	end := packetTimeStampToTime(d.currentPhase.EndTime)
-	d.currentPhase.Duration = uint32(end.Sub(start).Microseconds())
+	d.currentPhase.Duration = end.Sub(start).Microseconds()
 	matchStats.GamePhases = append(matchStats.GamePhases, d.currentPhase)
 	d.currentPhase.CommandExit = mapProtoCommandToCommand(*ref.Command)
 	if ref.NextCommand != nil && int32(*ref.NextCommand) >= 0 {
@@ -55,7 +55,7 @@ func (d *GamePhaseDetector) stopCurrentPhase(matchStats *MatchStats, ref *refere
 	}
 	d.currentPhase.GameEventsExit = ref.GameEvents[:]
 	if ref.StageTimeLeft != nil {
-		d.currentPhase.StageTimeLeftExit = *ref.StageTimeLeft
+		d.currentPhase.StageTimeLeftExit = int64(*ref.StageTimeLeft)
 	}
 }
 

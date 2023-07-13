@@ -19,7 +19,7 @@ func WriteGamePhaseDurations(matchStatsCollection *matchstats.MatchStatsCollecti
 		record := []string{matchStats.Name, strconv.FormatBool(matchStats.ExtraTime), strconv.FormatBool(matchStats.Shootout)}
 		durations := aggregator.AggregateGamePhaseDurations(matchStats)
 		for _, phaseName := range matchstats.GamePhaseType_name {
-			record = append(record, uintToStr(durations[phaseName].Duration))
+			record = append(record, int64ToStr(durations[phaseName].Duration))
 		}
 		records = append(records, record)
 	}
@@ -42,12 +42,12 @@ func WriteGamePhaseDurationStats(matchStatsCollection *matchstats.MatchStatsColl
 				phaseName[6:],
 				strconv.FormatBool(matchStats.ExtraTime),
 				strconv.FormatBool(matchStats.Shootout),
-				uintToStr(durations[phaseName].Duration),
-				uintToStr(durations[phaseName].DurationMin),
-				uintToStr(durations[phaseName].DurationMedian),
-				uintToStr(uint32(math.Round(float64(durations[phaseName].DurationAvg)))),
-				uintToStr(durations[phaseName].DurationMax),
-				uintToStr(durations[phaseName].Count),
+				int64ToStr(durations[phaseName].Duration),
+				int64ToStr(durations[phaseName].DurationMin),
+				int64ToStr(durations[phaseName].DurationMedian),
+				int64ToStr(int64(math.Round(float64(durations[phaseName].DurationAvg)))),
+				int64ToStr(durations[phaseName].DurationMax),
+				int64ToStr(durations[phaseName].Count),
 			}
 			records = append(records, record)
 		}
@@ -64,12 +64,12 @@ func WriteGamePhaseDurationStatsAggregated(aggregator *aggregator.Aggregator, fi
 	for _, phaseName := range matchstats.GamePhaseType_name {
 		record := []string{
 			phaseName,
-			uintToStr(aggregator.GamePhaseDurations[phaseName].Duration),
-			uintToStr(aggregator.GamePhaseDurations[phaseName].DurationMin),
-			uintToStr(aggregator.GamePhaseDurations[phaseName].DurationMedian),
-			uintToStr(uint32(math.Round(float64(aggregator.GamePhaseDurations[phaseName].DurationAvg)))),
-			uintToStr(aggregator.GamePhaseDurations[phaseName].DurationMax),
-			uintToStr(aggregator.GamePhaseDurations[phaseName].Count),
+			int64ToStr(aggregator.GamePhaseDurations[phaseName].Duration),
+			int64ToStr(aggregator.GamePhaseDurations[phaseName].DurationMin),
+			int64ToStr(aggregator.GamePhaseDurations[phaseName].DurationMedian),
+			int64ToStr(int64(math.Round(float64(aggregator.GamePhaseDurations[phaseName].DurationAvg)))),
+			int64ToStr(aggregator.GamePhaseDurations[phaseName].DurationMax),
+			int64ToStr(aggregator.GamePhaseDurations[phaseName].Count),
 		}
 		records = append(records, record)
 	}

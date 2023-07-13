@@ -50,10 +50,10 @@ func teamNumbers(stats *matchstats.TeamStats) []string {
 		intToStr(stats.Fouls),
 		intToStr(stats.YellowCards),
 		intToStr(stats.RedCards),
-		uintToStr(stats.TimeoutTime),
+		int64ToStr(stats.TimeoutTime),
 		intToStr(stats.TimeoutsTaken),
 		intToStr(stats.PenaltyShotsTotal),
-		uintToStr(stats.BallPlacementTime),
+		int64ToStr(stats.BallPlacementTime),
 		intToStr(stats.BallPlacements),
 		intToStr(stats.MaxActiveYellowCards),
 	}

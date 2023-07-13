@@ -7,17 +7,19 @@ import (
 )
 
 type MetaDataProcessor struct {
-	startTime         time.Time
+	startTime time.Time
+	// [microseconds]
 	timeoutTimeNormal uint32
 	timeoutsNormal    uint32
-	timeoutTimeExtra  uint32
-	timeoutsExtra     uint32
+	// [microseconds]
+	timeoutTimeExtra uint32
+	timeoutsExtra    uint32
 }
 
 func NewMetaDataProcessor() *MetaDataProcessor {
 	metaDataProcessor := new(MetaDataProcessor)
 	// the referee messages only contain the remaining timeout time
-	// as we can not guarantee that log files a complete, we do not know for sure, how much timeout time
+	// as we can not guarantee that log files are complete, we do not know for sure, how much timeout time
 	// was available initially, so we set it here explicitly based on the current rule set
 	metaDataProcessor.timeoutTimeNormal = 300_000_000
 	metaDataProcessor.timeoutTimeExtra = 150_000_000
@@ -69,7 +71,7 @@ func (m *MetaDataProcessor) OnLastRefereeMessage(matchStats *MatchStats, ref *re
 	processTeam(matchStats.TeamStatsBlue, ref.Blue, ref.Yellow)
 	processTeam(matchStats.TeamStatsYellow, ref.Yellow, ref.Blue)
 	endTime := packetTimeStampToTime(*ref.PacketTimestamp)
-	matchStats.MatchDuration = uint32(endTime.Sub(m.startTime).Microseconds())
+	matchStats.MatchDuration = endTime.Sub(m.startTime).Microseconds()
 
 	// if the log file does not end with POST_GAME, we have to keep track of the remaining timeouts
 	if uint32(*ref.Stage) != uint32(referee.Referee_POST_GAME) {
