@@ -10,7 +10,7 @@ A tool that generates statistics from [official SSL log files](https://ssl.roboc
 
 ## Requirements
 You need to install following dependencies first: 
- * Go >= 1.16
+ * Go >= 1.20
  
 ## Installation
 
