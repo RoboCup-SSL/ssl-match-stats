@@ -7,3 +7,6 @@ match-stats.json
 
 # ignore flyway.conf as it contains sensitive data
 flyway.conf
+
+# Local installations
+/.local

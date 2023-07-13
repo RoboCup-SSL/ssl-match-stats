@@ -87,7 +87,7 @@ To reset the database, run `docker-compose down`.
 
 ### Protobuf
 
-To generate the sources from the `.proto` files, run the [generateProto.sh](./generateProto.sh) script.
+To generate the sources from the `.proto` files, run `make proto`.
 
 
 ## Implementation Details
