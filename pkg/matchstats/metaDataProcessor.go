@@ -14,6 +14,8 @@ type MetaDataProcessor struct {
 	// [microseconds]
 	timeoutTimeExtra uint32
 	timeoutsExtra    uint32
+
+	penaltyKickTeam TeamColor
 }
 
 func NewMetaDataProcessor() *MetaDataProcessor {
@@ -48,9 +50,18 @@ func (m *MetaDataProcessor) OnNewStage(matchStats *MatchStats, ref *referee.Refe
 func (m *MetaDataProcessor) OnNewCommand(matchStats *MatchStats, ref *referee.Referee) {
 	switch *ref.Command {
 	case referee.Referee_PREPARE_PENALTY_BLUE:
-		matchStats.TeamStatsBlue.PenaltyShotsTotal += 1
+		m.penaltyKickTeam = TeamColor_TEAM_BLUE
 	case referee.Referee_PREPARE_PENALTY_YELLOW:
-		matchStats.TeamStatsYellow.PenaltyShotsTotal += 1
+		m.penaltyKickTeam = TeamColor_TEAM_YELLOW
+	case referee.Referee_NORMAL_START:
+		if m.penaltyKickTeam == TeamColor_TEAM_BLUE {
+			matchStats.TeamStatsBlue.PenaltyShotsTotal += 1
+		} else if m.penaltyKickTeam == TeamColor_TEAM_YELLOW {
+			matchStats.TeamStatsYellow.PenaltyShotsTotal += 1
+		}
+		m.penaltyKickTeam = TeamColor_TEAM_NONE
+	default:
+		m.penaltyKickTeam = TeamColor_TEAM_NONE
 	}
 }
 
