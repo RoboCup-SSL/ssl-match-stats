@@ -128,17 +128,27 @@ func (p *SqlDbExporter) insertAutoRefToGameEventMapping(autoRefId, gameEventId u
 	return err
 }
 
-// ByTeam extracts the `ByTeam` attribute from the game event details
+// ByTeam extracts the `ByTeam` attribute from the game event details, if present
 func ByTeam(gameEvent *referee.GameEvent) matchstats.TeamColor {
-	v := reflect.ValueOf(gameEvent.Event)
-	byTeamValue := v.Elem().Field(0).Elem().FieldByName("ByTeam")
-	if byTeamValue.IsValid() && !byTeamValue.IsNil() {
-		byTeam := sslcommon.Team(byTeamValue.Elem().Int())
-		switch byTeam {
-		case sslcommon.Team_YELLOW:
-			return matchstats.TeamColor_TEAM_YELLOW
-		case sslcommon.Team_BLUE:
-			return matchstats.TeamColor_TEAM_BLUE
+	if gameEvent.GetEvent() == nil {
+		return matchstats.TeamColor_TEAM_UNKNOWN
+	}
+	event := reflect.ValueOf(gameEvent.GetEvent())
+	if event.Elem().NumField() == 0 {
+		return matchstats.TeamColor_TEAM_UNKNOWN
+	}
+	// all structs have a single field that we need to access
+	v := event.Elem().Field(0)
+	if !v.IsNil() {
+		byTeamValue := v.Elem().FieldByName("ByTeam")
+		if byTeamValue.IsValid() && !byTeamValue.IsNil() {
+			byTeam := sslcommon.Team(byTeamValue.Elem().Int())
+			switch byTeam {
+			case sslcommon.Team_YELLOW:
+				return matchstats.TeamColor_TEAM_YELLOW
+			case sslcommon.Team_BLUE:
+				return matchstats.TeamColor_TEAM_BLUE
+			}
 		}
 	}
 	return matchstats.TeamColor_TEAM_UNKNOWN
