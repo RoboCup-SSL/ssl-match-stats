@@ -6,6 +6,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"log"
+	"strings"
 )
 
 func (p *SqlDbExporter) FindMatchId(logFileName string) *uuid.UUID {
@@ -25,7 +26,7 @@ func (p *SqlDbExporter) FindMatchId(logFileName string) *uuid.UUID {
 func (p *SqlDbExporter) WriteMatches(matchStatsCollection *matchstats.MatchStatsCollection, tournamentId *uuid.UUID, division string) error {
 	for _, matchStats := range matchStatsCollection.MatchStats {
 		log.Println("Writing ", matchStats.Name)
-		logFileName := matchStats.Name
+		logFileName := strings.ReplaceAll(matchStats.Name, ".gz", "")
 		matchId := p.FindMatchId(logFileName)
 		if matchId == nil {
 			matchId = new(uuid.UUID)
