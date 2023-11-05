@@ -23,9 +23,9 @@ func (p *SqlDbExporter) FindMatchId(logFileName string) *uuid.UUID {
 	return id
 }
 
-func (p *SqlDbExporter) WriteMatches(matchStatsCollection *matchstats.MatchStatsCollection, tournamentId *uuid.UUID, division string) error {
+func (p *SqlDbExporter) WriteMatches(matchStatsCollection *matchstats.MatchStatsCollection, tournamentId uuid.UUID, division string) error {
 	for _, matchStats := range matchStatsCollection.MatchStats {
-		log.Println("Writing ", matchStats.Name)
+		log.Println("Writing", matchStats.Name)
 		logFileName := strings.ReplaceAll(matchStats.Name, ".gz", "")
 		matchId := p.FindMatchId(logFileName)
 		if matchId == nil {

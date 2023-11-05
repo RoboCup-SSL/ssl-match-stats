@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"github.com/RoboCup-SSL/ssl-match-stats/pkg/matchstats"
 	"github.com/RoboCup-SSL/ssl-match-stats/pkg/sqldbexport"
+	"github.com/google/uuid"
 	"log"
 	"os"
+	"sync"
 )
 
 func main() {
@@ -16,8 +18,16 @@ func main() {
 	sqlDbSource := flag.String("sqlDbSource", "", "SQL connection string, for example: postgres://user:password@host:port/ssl_match_stats")
 	tournament := flag.String("tournament", "", "The tournament the log files are from")
 	division := flag.String("division", "", "The division of the log files. Should be one of: DivA, DivB, none")
+	parallel := flag.Int("parallel", 1, "Number of parallel processes")
 
 	flag.Parse()
+
+	args := flag.Args()
+
+	if len(args) == 0 {
+		usage()
+		return
+	}
 
 	if len(*sqlDbSource) == 0 {
 		log.Fatal("You have to specify a db source")
@@ -36,18 +46,49 @@ func main() {
 		log.Fatalf("Could not connect to database with driver '%v' at '%v'", *sqlDriver, *sqlDbSource)
 	}
 
-	a := matchstats.NewCollector()
-
-	if err := a.ReadBin("match-stats.bin"); err != nil {
-		log.Fatal(err)
-	}
-
 	tournamentId, err := exporter.AddTournamentIfNotPresent(*tournament)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	if err := exporter.WriteMatches(a.Collection, tournamentId, *division); err != nil {
+	var ch = make(chan string, *parallel)
+	var wg sync.WaitGroup
+	wg.Add(*parallel)
+
+	for i := 0; i < *parallel; i++ {
+		go func() {
+			for {
+				filename, ok := <-ch
+				if !ok {
+					wg.Done()
+					return
+				}
+				process(&exporter, *tournamentId, *division, filename)
+				log.Println("Done with ", filename)
+			}
+		}()
+	}
+
+	log.Println("Starting")
+	for _, filename := range args {
+		log.Printf("Adding %v to queue", filename)
+		ch <- filename
+	}
+
+	close(ch)
+	wg.Wait()
+	log.Println("Done")
+}
+
+func process(exporter *sqldbexport.SqlDbExporter, tournamentId uuid.UUID, division string, filename string) {
+
+	a := matchstats.NewCollector()
+
+	if err := a.ReadBin(filename); err != nil {
+		log.Fatal(err)
+	}
+
+	if err := exporter.WriteMatches(a.Collection, tournamentId, division); err != nil {
 		log.Fatal("Could not write matches: ", err)
 	}
 }

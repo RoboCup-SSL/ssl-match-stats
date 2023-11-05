@@ -65,7 +65,7 @@ func (p *SqlDbExporter) insertGameEvent(gameEvent *matchstats.GameEventTimed, ga
 
 	for _, origin := range gameEvent.GameEvent.Origin {
 		var autoRefId uuid.UUID
-		if id, ok := p.autoRefs[origin]; ok {
+		if id, ok := p.AutoRefId(origin); ok {
 			autoRefId = id
 		} else if presentAutoRefId := p.FindAutoRefId(origin); presentAutoRefId != nil {
 			autoRefId = *presentAutoRefId
@@ -76,7 +76,7 @@ func (p *SqlDbExporter) insertGameEvent(gameEvent *matchstats.GameEventTimed, ga
 			}
 			autoRefId = id
 		}
-		p.autoRefs[origin] = autoRefId
+		p.PutAutoRef(origin, autoRefId)
 		if err := p.insertAutoRefToGameEventMapping(autoRefId, gameEventId); err != nil {
 			return err
 		}

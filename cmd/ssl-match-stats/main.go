@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"sync"
 )
 
 var targetDir = flag.String("targetDir", "", "directory where the match stats should be written to")
@@ -25,14 +26,33 @@ func main() {
 		return
 	}
 
-	guard := make(chan struct{}, *parallel)
-	for _, filename := range args {
-		guard <- struct{}{}
-		go func(filename string) {
-			process(filename)
-			<-guard
-		}(filename)
+	var ch = make(chan string, *parallel)
+	var wg sync.WaitGroup
+	wg.Add(*parallel)
+
+	for i := 0; i < *parallel; i++ {
+		go func() {
+			for {
+				filename, ok := <-ch
+				if !ok {
+					wg.Done()
+					return
+				}
+				process(filename)
+				log.Println("Done with ", filename)
+			}
+		}()
 	}
+
+	log.Println("Starting")
+	for _, filename := range args {
+		log.Printf("Adding %v to queue", filename)
+		ch <- filename
+	}
+
+	close(ch)
+	wg.Wait()
+	log.Println("Done")
 }
 
 func process(filename string) {
