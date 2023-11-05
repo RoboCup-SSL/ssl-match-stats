@@ -43,15 +43,17 @@ func (p *SqlDbExporter) WriteMatches(matchStatsCollection *matchstats.MatchStats
 							start_time,
 							duration,
 							extra_time,
-							shootout
+							shootout,
+							type
 						) 
-						VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+						VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 						ON CONFLICT ON CONSTRAINT matches_pkey DO UPDATE SET
 							division=excluded.division,
 							start_time=excluded.start_time,
 							duration=excluded.duration,
 							extra_time=excluded.extra_time,
-							shootout=excluded.shootout`,
+							shootout=excluded.shootout,
+							type=excluded.type`,
 			matchId,
 			logFileName,
 			tournamentId,
@@ -60,6 +62,7 @@ func (p *SqlDbExporter) WriteMatches(matchStatsCollection *matchstats.MatchStats
 			convertDuration(matchStats.MatchDuration),
 			matchStats.ExtraTime,
 			matchStats.Shootout,
+			matchStats.Type,
 		); err != nil {
 			return errors.Wrap(err, "Could not insert match")
 		}

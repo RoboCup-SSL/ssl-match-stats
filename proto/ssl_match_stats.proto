@@ -57,6 +57,18 @@ enum GamePhaseType {
     PHASE_POST_GAME = 9;
 }
 
+// MatchType is a meta information about the current match for easier log processing
+enum StatsMatchType {
+    // not set
+    MATCH_UNKNOWN = 0;
+    // match is part of the group phase
+    MATCH_GROUP_PHASE = 1;
+    // match is part of the elimination phase
+    MATCH_ELIMINATION_PHASE = 2;
+    // a friendly match, not part of a tournament
+    MATCH_FRIENDLY = 3;
+}
+
 message Command {
     CommandType type = 1;
     TeamColor for_team = 2;
@@ -115,6 +127,7 @@ message TeamStats {
 
 message MatchStats {
     string name = 1;
+    StatsMatchType type = 11;
     // [microseconds]
     int64 match_duration = 2;
     // unix timestamp [microseconds]

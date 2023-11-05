@@ -83,6 +83,7 @@ func (m *MetaDataProcessor) OnLastRefereeMessage(matchStats *MatchStats, ref *re
 	processTeam(matchStats.TeamStatsYellow, ref.Yellow, ref.Blue)
 	endTime := packetTimeStampToTime(*ref.PacketTimestamp)
 	matchStats.MatchDuration = endTime.Sub(m.startTime).Microseconds()
+	matchStats.Type = mapMatchType(ref.MatchType)
 
 	// if the log file does not end with POST_GAME, we have to keep track of the remaining timeouts
 	if uint32(*ref.Stage) != uint32(referee.Referee_POST_GAME) {
@@ -109,6 +110,23 @@ func (m *MetaDataProcessor) OnLastRefereeMessage(matchStats *MatchStats, ref *re
 			}
 		}
 	}
+}
+
+func mapMatchType(matchType *referee.MatchType) StatsMatchType {
+	if matchType == nil {
+		return StatsMatchType_MATCH_UNKNOWN
+	}
+	switch *matchType {
+	case referee.MatchType_UNKNOWN_MATCH:
+		return StatsMatchType_MATCH_UNKNOWN
+	case referee.MatchType_GROUP_PHASE:
+		return StatsMatchType_MATCH_GROUP_PHASE
+	case referee.MatchType_ELIMINATION_PHASE:
+		return StatsMatchType_MATCH_ELIMINATION_PHASE
+	case referee.MatchType_FRIENDLY:
+		return StatsMatchType_MATCH_FRIENDLY
+	}
+	return StatsMatchType_MATCH_UNKNOWN
 }
 
 func addTimeout(teamStats *TeamStats, teamInfo *referee.Referee_TeamInfo) {
