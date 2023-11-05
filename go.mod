@@ -1,6 +1,6 @@
 module github.com/RoboCup-SSL/ssl-match-stats
 
-go 1.20
+go 1.18
 
 require (
 	github.com/google/uuid v1.3.0
