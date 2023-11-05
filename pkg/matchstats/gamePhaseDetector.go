@@ -23,7 +23,7 @@ func (d *GamePhaseDetector) startNewPhase(matchStats *MatchStats, ref *referee.R
 	d.currentPhase.StartTime = *ref.PacketTimestamp
 	d.currentPhase.Stage = mapProtoStageToStageType(*ref.Stage)
 	if ref.StageTimeLeft != nil {
-		d.currentPhase.StageTimeLeftEntry = int64(*ref.StageTimeLeft)
+		d.currentPhase.StageTimeLeftEntry = *ref.StageTimeLeft
 	}
 	d.currentPhase.CommandEntry = mapProtoCommandToCommand(*ref.Command)
 	d.currentPhase.ForTeam = mapProtoCommandToTeam(*ref.Command)
@@ -55,7 +55,7 @@ func (d *GamePhaseDetector) stopCurrentPhase(matchStats *MatchStats, ref *refere
 	}
 	d.currentPhase.GameEventsExit = ref.GameEvents[:]
 	if ref.StageTimeLeft != nil {
-		d.currentPhase.StageTimeLeftExit = int64(*ref.StageTimeLeft)
+		d.currentPhase.StageTimeLeftExit = *ref.StageTimeLeft
 	}
 }
 
@@ -110,7 +110,7 @@ func (d *GamePhaseDetector) OnNewRefereeMessage(_ *MatchStats, ref *referee.Refe
 
 	var proposedGameEvents []*referee.GameEvent
 	for _, gameEvent := range ref.GameEventProposals {
-		proposedGameEvents = append(proposedGameEvents, gameEvent.GameEvent...)
+		proposedGameEvents = append(proposedGameEvents, gameEvent.GameEvents...)
 	}
 
 	d.currentPhase.GameEventsProposed = processGameEvents(d.currentPhase.GameEventsProposed, proposedGameEvents, *ref.PacketTimestamp)

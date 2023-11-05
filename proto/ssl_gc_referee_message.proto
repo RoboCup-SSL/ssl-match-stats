@@ -71,7 +71,7 @@ message Referee {
     //
     // If the stage runs over its specified time, this value
     // becomes negative.
-    optional sint32 stage_time_left = 3;
+    optional sint64 stage_time_left = 3;
 
     // These are the "fine" states of play on the field.
     enum Command {
@@ -194,7 +194,7 @@ message Referee {
     reserved 13;
     repeated GameEvent game_events = 16;
 
-    // All non-finished proposed game events that may be processed next.
+    // All proposed game events that were detected since the last RUNNING state.
     reserved 14;
     repeated GameEventProposalGroup game_event_proposals = 17;
 
@@ -205,13 +205,15 @@ message Referee {
     //  * free kicks
     //  * kickoff, penalty kick, force start
     //  * ball placement
-    optional int32 current_action_time_remaining = 15;
+    optional int64 current_action_time_remaining = 15;
 }
 
 // List of matching proposals
 message GameEventProposalGroup {
-    // The proposed game event.
-    repeated GameEvent game_event = 1;
+    // Unique ID of this group
+    optional string id = 3;
+    // The proposed game events
+    repeated GameEvent game_events = 1;
     // Whether the proposal group was accepted
     optional bool accepted = 2;
 }
