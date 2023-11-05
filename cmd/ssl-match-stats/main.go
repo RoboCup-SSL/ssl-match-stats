@@ -6,10 +6,15 @@ import (
 	"github.com/RoboCup-SSL/ssl-match-stats/pkg/matchstats"
 	"log"
 	"os"
+	"path/filepath"
 )
+
+var targetDir = flag.String("targetDir", "", "directory where the match stats should be written to")
 
 func main() {
 	flag.Usage = usage
+
+	parallel := flag.Int("parallel", 1, "number of parallel processes")
 
 	flag.Parse()
 
@@ -20,23 +25,33 @@ func main() {
 		return
 	}
 
-	a := matchstats.NewCollector()
+	guard := make(chan struct{}, *parallel)
 	for _, filename := range args {
-		log.Println("Processing", filename)
+		guard <- struct{}{}
+		go func(filename string) {
+			process(filename)
+			<-guard
+		}(filename)
+	}
+}
 
-		err := a.Process(filename)
-		if err != nil {
-			log.Printf("%v: %v\n", filename, err)
-		} else {
-			log.Printf("Processed %v\n", filename)
-		}
+func process(filename string) {
+	a := matchstats.NewCollector()
+	log.Println("Processing", filename)
+
+	err := a.Process(filename)
+	if err != nil {
+		log.Printf("%v: %v\n", filename, err)
+	} else {
+		log.Printf("Processed %v\n", filename)
 	}
 
-	if err := a.WriteBin("match-stats.bin"); err != nil {
+	baseFilename := filepath.Base(filename)
+	if err := a.WriteBin(filepath.Join(*targetDir, baseFilename+".bin")); err != nil {
 		log.Println("Could not write binary file", err)
 	}
 
-	if err := a.WriteJson("match-stats.json"); err != nil {
+	if err := a.WriteJson(filepath.Join(*targetDir, baseFilename+".json")); err != nil {
 		log.Println("Could not write JSON file", err)
 	}
 }
