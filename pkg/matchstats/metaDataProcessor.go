@@ -154,7 +154,7 @@ func (m *MetaDataProcessor) updateMaxActiveYellowCards(teamInfo *referee.Referee
 }
 
 func processTeam(stats *TeamStats, team *referee.Referee_TeamInfo, otherTeam *referee.Referee_TeamInfo) {
-	stats.Name = *team.Name
+	stats.Name = fixTeamName(*team.Name)
 	stats.Goals = int32(*team.Score)
 	stats.ConcededGoals = int32(*otherTeam.Score)
 	stats.YellowCards = int32(*team.YellowCards)
@@ -162,4 +162,12 @@ func processTeam(stats *TeamStats, team *referee.Referee_TeamInfo, otherTeam *re
 	if team.FoulCounter != nil {
 		stats.Fouls = int32(*team.FoulCounter)
 	}
+}
+
+func fixTeamName(teamName string) string {
+	if teamName == "Ri-One" {
+		// team name was available and used in GC in both variations -.-
+		return "Ri-one"
+	}
+	return teamName
 }
