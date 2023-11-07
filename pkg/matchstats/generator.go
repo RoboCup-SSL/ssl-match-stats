@@ -1,8 +1,8 @@
 package matchstats
 
 import (
+	"github.com/RoboCup-SSL/ssl-go-tools/pkg/persistence"
 	"github.com/RoboCup-SSL/ssl-match-stats/internal/referee"
-	"github.com/RoboCup-SSL/ssl-match-stats/pkg/persistence"
 	"github.com/pkg/errors"
 	"google.golang.org/protobuf/proto"
 	"log"
