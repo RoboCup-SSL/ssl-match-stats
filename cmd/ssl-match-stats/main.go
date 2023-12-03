@@ -11,6 +11,8 @@ import (
 )
 
 var targetDir = flag.String("targetDir", "", "directory where the match stats should be written to")
+var writeBin = flag.Bool("writeBin", true, "write binary file")
+var writeJson = flag.Bool("writeJson", false, "write JSON file")
 
 func main() {
 	flag.Usage = usage
@@ -71,12 +73,16 @@ func process(filename string) {
 	}
 
 	baseFilename := filepath.Base(filename)
-	if err := a.WriteBin(filepath.Join(*targetDir, baseFilename+".bin")); err != nil {
-		log.Println("Could not write binary file", err)
+	if *writeBin {
+		if err := a.WriteBin(filepath.Join(*targetDir, baseFilename+".bin")); err != nil {
+			log.Println("Could not write binary file", err)
+		}
 	}
 
-	if err := a.WriteJson(filepath.Join(*targetDir, baseFilename+".json")); err != nil {
-		log.Println("Could not write JSON file", err)
+	if *writeJson {
+		if err := a.WriteJson(filepath.Join(*targetDir, baseFilename+".json")); err != nil {
+			log.Println("Could not write JSON file", err)
+		}
 	}
 }
 
