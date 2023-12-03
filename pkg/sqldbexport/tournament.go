@@ -2,8 +2,9 @@ package sqldbexport
 
 import (
 	"database/sql"
+	"errors"
+	"fmt"
 	"github.com/google/uuid"
-	"github.com/pkg/errors"
 	"log"
 )
 
@@ -33,11 +34,20 @@ func (p *SqlDbExporter) FindTournamentId(tournamentName string) (*uuid.UUID, err
 	err := p.db.QueryRow(
 		"SELECT id FROM tournaments WHERE name=$1",
 		tournamentName).Scan(id)
-	if err == sql.ErrNoRows {
+	if errors.Is(err, sql.ErrNoRows) {
 		return nil, nil
 	}
 	if err != nil {
-		return nil, errors.Wrap(err, "Could not query tournaments:")
+		return nil, fmt.Errorf("could not query tournaments: %w", err)
 	}
 	return id, nil
+}
+
+func (p *SqlDbExporter) RefreshMaterializedViews() {
+	log.Println("Refreshing materialized views")
+	if _, err := p.db.Exec(
+		"REFRESH MATERIALIZED VIEW match_stats",
+	); err != nil {
+		log.Println("Could not refresh materialized view match_stats:", err)
+	}
 }
