@@ -1,7 +1,7 @@
 version: '3'
 services:
   db:
-    image: "postgres:9.6.3"
+    image: "postgres:9.6.24"
     environment:
       - POSTGRES_USER=ssl_match_stats
       - POSTGRES_PASSWORD=ssl_match_stats
