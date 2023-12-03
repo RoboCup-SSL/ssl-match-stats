@@ -62,7 +62,7 @@ func (p *SqlDbExporter) WriteMatches(matchStatsCollection *matchstats.MatchStats
 			convertDuration(matchStats.MatchDuration),
 			matchStats.ExtraTime,
 			matchStats.Shootout,
-			matchStats.Type,
+			matchStats.Type.String()[6:],
 		); err != nil {
 			return errors.Wrap(err, "Could not insert match")
 		}
