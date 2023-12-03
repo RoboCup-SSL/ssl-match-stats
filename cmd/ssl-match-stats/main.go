@@ -66,6 +66,10 @@ func process(filename string) {
 		log.Printf("Processed %v\n", filename)
 	}
 
+	if err := os.MkdirAll(*targetDir, os.ModePerm); err != nil {
+		log.Fatalln("Could not create directory for binary output file", err)
+	}
+
 	baseFilename := filepath.Base(filename)
 	if err := a.WriteBin(filepath.Join(*targetDir, baseFilename+".bin")); err != nil {
 		log.Println("Could not write binary file", err)
