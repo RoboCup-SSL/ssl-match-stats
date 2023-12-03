@@ -1,10 +1,14 @@
 github.com/RoboCup-SSL/ssl-go-tools v1.5.1 h1:C04faZ0Qw2lGFpy4AwlGQOEsDHY2O+YVj4Vlwb1QM0g=
 github.com/RoboCup-SSL/ssl-go-tools v1.5.1/go.mod h1:trF/vB97cNvfdPfW+p9uYyq3CFhPUbqO5925ciGm9TQ=
+github.com/RoboCup-SSL/ssl-go-tools v1.5.2 h1:EZhaKD600XoZPl2CdV1UCu7eXZifu0pyDiUsAUcxK58=
+github.com/RoboCup-SSL/ssl-go-tools v1.5.2/go.mod h1:CHOT6+ByjtU6UurKCC5fCcc+vXauOvwQrndrPdB6MjA=
 github.com/golang/protobuf v1.5.0/go.mod h1:FsONVRAS9T7sI+LIUmWTfcYkHO4aIWwzhcaSAoJOfIk=
 github.com/google/go-cmp v0.5.5 h1:Khx7svrCpmxxtHBq5j2mp/xVjsi8hQMfNLvJFAlrGgU=
 github.com/google/go-cmp v0.5.5/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/gNBxE=
 github.com/google/uuid v1.3.0 h1:t6JiXgmwXMjEs8VusXIJk2BXHsn+wx8BZdTaoZ5fu7I=
 github.com/google/uuid v1.3.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
+github.com/google/uuid v1.4.0 h1:MtMxsa51/r9yyhkyLsVeVt0B+BGQZzpQiTQ4eHZ8bc4=
+github.com/google/uuid v1.4.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
 github.com/lib/pq v1.10.9 h1:YXG7RB+JIjhP29X+OtkiDnYaXQwpS4JEWq7dtCCRUEw=
 github.com/lib/pq v1.10.9/go.mod h1:AlVN5x4E4T544tWzH6hKfbfQvm3HdbOxrmggDNAPY9o=
 github.com/pkg/errors v0.9.1 h1:FEBLx1zS214owpjy7qsBeixbURkuhQAwrK5UwLGTwt4=
