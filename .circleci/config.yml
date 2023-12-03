@@ -1,25 +1,23 @@
-version: 2
+version: 2.1
+
 jobs:
-  tools:
+  test_go:
+    resource_class: medium
     docker:
-    - image: circleci/golang:1.13
-    working_directory: /go/src/github.com/RoboCup-SSL/ssl-match-stats
+      - image: cimg/go:1.21.4
     steps:
-    - checkout
-    - attach_workspace:
-        at: .
-    - run: go get -v -t -d ./...
-    - run: go test -v -covermode=count -coverprofile=count.out ./...
-    - run: go tool cover -html=count.out -o coverage.html
-    - store_artifacts:
-        path: coverage.html
-        destination: coverage
+      - checkout
+      - attach_workspace:
+          at: .
+      - run: go get -v -t -d ./...
+      - run: go test -v -covermode=count -coverprofile=count.out ./...
+      - run: go tool cover -html=count.out -o coverage.html
+      - store_artifacts:
+          path: coverage.html
+          destination: coverage
 
 workflows:
   version: 2
-  main:
+  build:
     jobs:
-    - tools:
-        filters:
-          tags:
-            only: /.*/
+      - test_go
