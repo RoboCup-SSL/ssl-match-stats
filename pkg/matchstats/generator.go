@@ -46,6 +46,9 @@ func (m *Generator) Process(filename string) (*MatchStats, error) {
 
 		if lastRefereeMsg == nil {
 			m.OnFirstRefereeMessage(matchStats, r)
+		} else if *r.PacketTimestamp < *lastRefereeMsg.PacketTimestamp {
+			log.Println("Skip out of order referee message")
+			continue
 		}
 
 		if lastRefereeMsg == nil || *r.Stage != *lastRefereeMsg.Stage {
