@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/RoboCup-SSL/ssl-match-stats/pkg/matchstats"
 	"github.com/RoboCup-SSL/ssl-match-stats/pkg/sqldbexport"
-	"github.com/google/uuid"
 	"log"
 	"os"
 	"sync"
@@ -46,11 +45,6 @@ func main() {
 		log.Fatalf("Could not connect to database with driver '%v' at '%v'", *sqlDriver, *sqlDbSource)
 	}
 
-	tournamentId, err := exporter.AddTournamentIfNotPresent(*tournament)
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	var ch = make(chan string, *parallel)
 	var wg sync.WaitGroup
 	wg.Add(*parallel)
@@ -63,7 +57,7 @@ func main() {
 					wg.Done()
 					return
 				}
-				process(&exporter, *tournamentId, *division, filename)
+				process(&exporter, *tournament, *division, filename)
 				log.Println("Done with ", filename)
 			}
 		}()
@@ -83,7 +77,7 @@ func main() {
 	log.Println("Done")
 }
 
-func process(exporter *sqldbexport.SqlDbExporter, tournamentId uuid.UUID, division string, filename string) {
+func process(exporter *sqldbexport.SqlDbExporter, tournamentName string, division string, filename string) {
 
 	a := matchstats.NewCollector()
 
@@ -91,7 +85,7 @@ func process(exporter *sqldbexport.SqlDbExporter, tournamentId uuid.UUID, divisi
 		log.Fatal(err)
 	}
 
-	if err := exporter.WriteMatches(a.Collection, tournamentId, division); err != nil {
+	if err := exporter.WriteMatches(a.Collection, tournamentName, division); err != nil {
 		log.Fatal("Could not write matches: ", err)
 	}
 }

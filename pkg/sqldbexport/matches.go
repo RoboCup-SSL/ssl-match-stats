@@ -14,7 +14,7 @@ func (p *SqlDbExporter) FindMatchId(logFileName string) *uuid.UUID {
 	err := p.db.QueryRow(
 		"SELECT id FROM matches WHERE file_name=$1",
 		logFileName).Scan(id)
-	if err == sql.ErrNoRows {
+	if errors.Is(err, sql.ErrNoRows) {
 		return nil
 	}
 	if err != nil {
@@ -23,7 +23,7 @@ func (p *SqlDbExporter) FindMatchId(logFileName string) *uuid.UUID {
 	return id
 }
 
-func (p *SqlDbExporter) WriteMatches(matchStatsCollection *matchstats.MatchStatsCollection, tournamentId uuid.UUID, division string) error {
+func (p *SqlDbExporter) WriteMatches(matchStatsCollection *matchstats.MatchStatsCollection, tournamentName string, division string) error {
 	for _, matchStats := range matchStatsCollection.MatchStats {
 		log.Println("Writing", matchStats.Name)
 		logFileName := strings.ReplaceAll(matchStats.Name, ".gz", "")
@@ -38,7 +38,7 @@ func (p *SqlDbExporter) WriteMatches(matchStatsCollection *matchstats.MatchStats
 						(
 							id, 
 							file_name, 
-							tournament_id_fk, 
+							tournament_name, 
 							division,
 							start_time,
 							duration,
@@ -56,7 +56,7 @@ func (p *SqlDbExporter) WriteMatches(matchStatsCollection *matchstats.MatchStats
 							type=excluded.type`,
 			matchId,
 			logFileName,
-			tournamentId,
+			tournamentName,
 			division,
 			convertTime(matchStats.StartTime),
 			convertDuration(matchStats.MatchDuration),

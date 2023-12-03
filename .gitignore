@@ -1,7 +1,6 @@
 *.log
 *.log.gz
-match-stats.bin
-match-stats.json
+/stats
 
 .idea
 

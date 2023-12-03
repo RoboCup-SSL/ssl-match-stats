@@ -1,10 +1,34 @@
 version: '3'
 services:
+  metabase:
+    image: "metabase/metabase:latest"
+    volumes:
+      - /dev/urandom:/dev/random:ro
+    ports:
+      - "3000:3000"
+    environment:
+      MB_DB_TYPE: postgres
+      MB_DB_DBNAME: metabase
+      MB_DB_PORT: 5432
+      MB_DB_USER: metabase
+      MB_DB_PASS: metabase
+      MB_DB_HOST: metabase-db
+    depends_on:
+      - metabase-db
+
+  metabase-db:
+    image: "postgres:13"
+    environment:
+      POSTGRES_DB: metabase
+      POSTGRES_USER: metabase
+      POSTGRES_PASSWORD: metabase
+
   db:
     image: "postgres:13"
     environment:
-      - POSTGRES_USER=ssl_match_stats
-      - POSTGRES_PASSWORD=ssl_match_stats
+      POSTGRES_DB: ssl_match_stats
+      POSTGRES_USER: ssl_match_stats
+      POSTGRES_PASSWORD: ssl_match_stats
     ports:
       - "5432:5432"
 
@@ -12,6 +36,6 @@ services:
     image: "flyway/flyway:10"
     command: -url=jdbc:postgresql://db:5432/ssl_match_stats -schemas=public -user=ssl_match_stats -password=ssl_match_stats -connectRetries=60 migrate
     volumes:
-      - ./sql:/flyway/sql
+      - ./sql/flyway:/flyway/sql
     depends_on:
       - db
