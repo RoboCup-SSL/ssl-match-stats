@@ -69,6 +69,15 @@ enum StatsMatchType {
     MATCH_FRIENDLY = 3;
 }
 
+// GameEventCategory is a derived category for the game event type
+enum GameEventCategory {
+    CATEGORY_UNKNOWN = 0;
+    CATEGORY_BALL_OUT = 1;
+    CATEGORY_FOUL = 2;
+    CATEGORY_GOAL = 3;
+    CATEGORY_OTHER = 4;
+}
+
 message Command {
     CommandType type = 1;
     TeamColor for_team = 2;
@@ -104,6 +113,7 @@ message GameEventTimed {
     GameEvent game_event = 1;
     uint64 timestamp = 2;
     bool withdrawn = 3;
+    GameEventCategory category = 4;
 }
 
 message TeamStats {

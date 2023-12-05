@@ -126,7 +126,13 @@ func processGameEvents(gameEvents []*GameEventTimed, newGameEvents []*referee.Ga
 
 	for _, presentGameEvent := range newGameEvents {
 		if !containsGameEventTimed(presentGameEvent, gameEvents) {
-			gameEventTimed := GameEventTimed{GameEvent: presentGameEvent, Timestamp: timestamp, Withdrawn: false}
+			category := gameEventCategory(*presentGameEvent.Type)
+			gameEventTimed := GameEventTimed{
+				GameEvent: presentGameEvent,
+				Timestamp: timestamp,
+				Withdrawn: false,
+				Category:  category,
+			}
 			gameEvents = append(gameEvents, &gameEventTimed)
 		}
 	}
@@ -286,4 +292,50 @@ func mapProtoStageToStageType(stage referee.Referee_Stage) StageType {
 		return StageType_STAGE_POST_GAME
 	}
 	return StageType_STAGE_UNKNOWN
+}
+
+func gameEventCategory(gameEventType referee.GameEvent_Type) GameEventCategory {
+	switch gameEventType {
+	case referee.GameEvent_BALL_LEFT_FIELD_TOUCH_LINE,
+		referee.GameEvent_BALL_LEFT_FIELD_GOAL_LINE,
+		referee.GameEvent_AIMLESS_KICK:
+		return GameEventCategory_CATEGORY_BALL_OUT
+	case referee.GameEvent_ATTACKER_TOO_CLOSE_TO_DEFENSE_AREA,
+		referee.GameEvent_DEFENDER_IN_DEFENSE_AREA,
+		referee.GameEvent_BOUNDARY_CROSSING,
+		referee.GameEvent_KEEPER_HELD_BALL,
+		referee.GameEvent_BOT_DRIBBLED_BALL_TOO_FAR,
+		referee.GameEvent_BOT_PUSHED_BOT,
+		referee.GameEvent_BOT_HELD_BALL_DELIBERATELY,
+		referee.GameEvent_BOT_TIPPED_OVER,
+		referee.GameEvent_ATTACKER_TOUCHED_BALL_IN_DEFENSE_AREA,
+		referee.GameEvent_BOT_KICKED_BALL_TOO_FAST,
+		referee.GameEvent_BOT_CRASH_UNIQUE,
+		referee.GameEvent_BOT_CRASH_DRAWN,
+		referee.GameEvent_DEFENDER_TOO_CLOSE_TO_KICK_POINT,
+		referee.GameEvent_BOT_TOO_FAST_IN_STOP,
+		referee.GameEvent_BOT_INTERFERED_PLACEMENT:
+		return GameEventCategory_CATEGORY_FOUL
+	case referee.GameEvent_GOAL,
+		referee.GameEvent_INVALID_GOAL,
+		referee.GameEvent_POSSIBLE_GOAL:
+		return GameEventCategory_CATEGORY_GOAL
+	case referee.GameEvent_ATTACKER_DOUBLE_TOUCHED_BALL,
+		referee.GameEvent_PLACEMENT_SUCCEEDED,
+		referee.GameEvent_PENALTY_KICK_FAILED,
+		referee.GameEvent_NO_PROGRESS_IN_GAME,
+		referee.GameEvent_PLACEMENT_FAILED,
+		referee.GameEvent_MULTIPLE_CARDS,
+		referee.GameEvent_MULTIPLE_FOULS,
+		referee.GameEvent_BOT_SUBSTITUTION,
+		referee.GameEvent_TOO_MANY_ROBOTS,
+		referee.GameEvent_CHALLENGE_FLAG,
+		referee.GameEvent_CHALLENGE_FLAG_HANDLED,
+		referee.GameEvent_EMERGENCY_STOP,
+		referee.GameEvent_UNSPORTING_BEHAVIOR_MINOR,
+		referee.GameEvent_UNSPORTING_BEHAVIOR_MAJOR:
+		return GameEventCategory_CATEGORY_OTHER
+	default:
+		return GameEventCategory_CATEGORY_UNKNOWN
+	}
 }

@@ -171,12 +171,21 @@ create type game_event as enum (
     'CHALLENGE_FLAG_HANDLED'
     );
 
+create type game_event_category as enum (
+    'UNKNOWN',
+    'BALL_OUT',
+    'FOUL',
+    'GOAL',
+    'OTHER'
+    );
+
 -- game events with reference to game phases
 create table game_events
 (
     id               uuid primary key,
     game_phase_id_fk uuid references game_phases (id) on delete cascade,
     type             game_event,
+    category         game_event_category,
     by_team          varchar(7),
     timestamp        timestamp,
     withdrawn        bool,
