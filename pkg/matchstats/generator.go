@@ -64,7 +64,9 @@ func (m *Generator) Process(filename string) (*MatchStats, error) {
 		lastRefereeMsg = r
 	}
 
-	m.OnLastRefereeMessage(matchStats, lastRefereeMsg)
+	if lastRefereeMsg != nil {
+		m.OnLastRefereeMessage(matchStats, lastRefereeMsg)
+	}
 
 	return matchStats, logReader.Close()
 }
