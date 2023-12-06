@@ -72,8 +72,6 @@ func main() {
 	close(ch)
 	wg.Wait()
 
-	exporter.RefreshMaterializedViews()
-
 	log.Println("Done")
 }
 

@@ -42,12 +42,3 @@ func (p *SqlDbExporter) FindTournamentId(tournamentName string) (*uuid.UUID, err
 	}
 	return id, nil
 }
-
-func (p *SqlDbExporter) RefreshMaterializedViews() {
-	log.Println("Refreshing materialized views")
-	if _, err := p.db.Exec(
-		"REFRESH MATERIALIZED VIEW match_stats",
-	); err != nil {
-		log.Println("Could not refresh materialized view match_stats:", err)
-	}
-}
