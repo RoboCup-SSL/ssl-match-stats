@@ -10,7 +10,7 @@ import (
 	"sync"
 )
 
-var targetDir = flag.String("targetDir", "", "directory where the match stats should be written to")
+var targetDir = flag.String("targetDir", ".", "directory where the match stats should be written to")
 var writeBin = flag.Bool("writeBin", true, "write binary file")
 var writeJson = flag.Bool("writeJson", false, "write JSON file")
 
