@@ -26,6 +26,12 @@ func (p *SqlDbExporter) FindMatchId(logFileName string) *uuid.UUID {
 func (p *SqlDbExporter) WriteMatches(matchStatsCollection *matchstats.MatchStatsCollection, tournamentName string, division string) error {
 	for _, matchStats := range matchStatsCollection.MatchStats {
 		log.Println("Writing", matchStats.Name)
+
+		if matchStats == nil || matchStats.TeamStatsYellow == nil || matchStats.TeamStatsBlue == nil {
+			log.Println("Invalid match stats: ", matchStats)
+			return nil
+		}
+
 		logFileName := strings.ReplaceAll(matchStats.Name, ".gz", "")
 		matchId := p.FindMatchId(logFileName)
 		if matchId == nil {
