@@ -18,7 +18,7 @@ func (p *SqlDbExporter) Connect(driver string, dataSourceName string) error {
 		return err
 	}
 	p.db = db
-	db.SetConnMaxLifetime(0)
+	db.SetConnMaxLifetime(time.Minute * 30)
 	p.ctx = context.Background()
 	return nil
 }
