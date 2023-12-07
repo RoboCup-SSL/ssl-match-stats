@@ -110,6 +110,7 @@ create table game_phases
     for_team                       team_color,
     entry_command                  command,
     entry_command_for_team         team_color,
+    entry_command_timestamp        timestamp,
     exit_command                   command,
     exit_command_for_team          team_color,
     proposed_next_command          command,
@@ -182,15 +183,17 @@ create type game_event_category as enum (
 -- game events with reference to game phases
 create table game_events
 (
-    id               uuid primary key,
-    game_phase_id_fk uuid references game_phases (id) on delete cascade,
-    type             game_event,
-    category         game_event_category,
-    by_team          varchar(7),
-    timestamp        timestamp,
-    withdrawn        bool,
-    proposed         bool,
-    payload          jsonb
+    id                uuid primary key,
+    game_phase_id_fk  uuid references game_phases (id) on delete cascade,
+    type              game_event          not null,
+    category          game_event_category not null,
+    by_team           varchar(7)          not null,
+    timestamp         timestamp           not null,
+    -- timestamp when event was created by the GC. This data was not available in the past, so it might be null.
+    created_timestamp timestamp,
+    withdrawn         bool                not null,
+    proposed          bool                not null,
+    payload           jsonb               not null
 );
 
 -- mapping between game events and origins (note: there can be multiple origins per event)

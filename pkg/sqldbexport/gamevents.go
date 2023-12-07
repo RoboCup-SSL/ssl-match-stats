@@ -7,6 +7,7 @@ import (
 	"github.com/RoboCup-SSL/ssl-match-stats/pkg/matchstats"
 	"github.com/google/uuid"
 	"reflect"
+	"time"
 )
 
 type GameEventKind int
@@ -34,6 +35,12 @@ func (p *SqlDbExporter) insertGameEvent(gameEvent *matchstats.GameEventTimed, ga
 
 	byTeam := ByTeam(gameEvent.GameEvent)
 
+	var createdTimestamp *time.Time
+	if gameEvent.GameEvent.CreatedTimestamp != nil {
+		createdTimestamp = new(time.Time)
+		*createdTimestamp = convertTime(*gameEvent.GameEvent.CreatedTimestamp)
+	}
+
 	gameEventId := uuid.New()
 	_, err = p.db.Exec(
 		`INSERT INTO game_events (
@@ -43,17 +50,19 @@ func (p *SqlDbExporter) insertGameEvent(gameEvent *matchstats.GameEventTimed, ga
 					 category,
 					 by_team,
 					 timestamp,
+					 created_timestamp,
 					 withdrawn,
 					 proposed,
 					 payload
                      ) 
-				VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+				VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
 		gameEventId,
 		gamePhaseId,
 		gameEvent.GameEvent.Type.String(),
 		gameEvent.Category.String()[9:],
 		byTeam.String()[5:],
 		convertTime(gameEvent.Timestamp),
+		createdTimestamp,
 		gameEvent.Withdrawn,
 		kind == GameEventKindProposed,
 		payload,

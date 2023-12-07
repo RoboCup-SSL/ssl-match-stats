@@ -25,14 +25,18 @@ func (d *GamePhaseDetector) startNewPhase(matchStats *MatchStats, ref *referee.R
 	if ref.StageTimeLeft != nil {
 		d.currentPhase.StageTimeLeftEntry = *ref.StageTimeLeft
 	}
-	d.currentPhase.CommandEntry = mapProtoCommandToCommand(*ref.Command)
+	d.currentPhase.CommandEntry = mapProtoCommandToCommand(*ref.Command, *ref.CommandTimestamp)
 	d.currentPhase.ForTeam = mapProtoCommandToTeam(*ref.Command)
 	d.currentPhase.GameEventsEntry = ref.GameEvents[:]
 
 	if prevPhase != nil {
 		d.currentPhase.CommandPrev = prevPhase.CommandEntry
 	} else {
-		d.currentPhase.CommandPrev = &Command{Type: CommandType_COMMAND_UNKNOWN, ForTeam: TeamColor_TEAM_UNKNOWN}
+		d.currentPhase.CommandPrev = &Command{
+			Type:      CommandType_COMMAND_UNKNOWN,
+			ForTeam:   TeamColor_TEAM_UNKNOWN,
+			Timestamp: *ref.CommandTimestamp,
+		}
 	}
 
 	if d.currentPhase.CommandEntry.Type == CommandType_COMMAND_UNKNOWN {
@@ -45,13 +49,13 @@ func (d *GamePhaseDetector) stopCurrentPhase(matchStats *MatchStats, ref *refere
 		return
 	}
 	d.currentPhase.EndTime = *ref.PacketTimestamp
-	start := packetTimeStampToTime(d.currentPhase.StartTime)
-	end := packetTimeStampToTime(d.currentPhase.EndTime)
+	start := packetTimestampToTime(d.currentPhase.StartTime)
+	end := packetTimestampToTime(d.currentPhase.EndTime)
 	d.currentPhase.Duration = end.Sub(start).Microseconds()
 	matchStats.GamePhases = append(matchStats.GamePhases, d.currentPhase)
-	d.currentPhase.CommandExit = mapProtoCommandToCommand(*ref.Command)
+	d.currentPhase.CommandExit = mapProtoCommandToCommand(*ref.Command, *ref.CommandTimestamp)
 	if ref.NextCommand != nil && int32(*ref.NextCommand) >= 0 {
-		d.currentPhase.NextCommandProposed = mapProtoCommandToCommand(*ref.NextCommand)
+		d.currentPhase.NextCommandProposed = mapProtoCommandToCommand(*ref.NextCommand, *ref.CommandTimestamp)
 	}
 	d.currentPhase.GameEventsExit = ref.GameEvents[:]
 	if ref.StageTimeLeft != nil {
@@ -158,10 +162,11 @@ func containsGameEvent(gameEvent *referee.GameEvent, gameEvents []*referee.GameE
 	return false
 }
 
-func mapProtoCommandToCommand(command referee.Referee_Command) *Command {
+func mapProtoCommandToCommand(command referee.Referee_Command, timestamp uint64) *Command {
 	return &Command{
-		Type:    mapProtoCommandToCommandType(command),
-		ForTeam: mapProtoCommandToTeam(command),
+		Type:      mapProtoCommandToCommandType(command),
+		ForTeam:   mapProtoCommandToTeam(command),
+		Timestamp: timestamp,
 	}
 }
 

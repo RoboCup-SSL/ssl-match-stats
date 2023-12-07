@@ -81,6 +81,8 @@ enum GameEventCategory {
 message Command {
     CommandType type = 1;
     TeamColor for_team = 2;
+    // [microseconds]
+    uint64 timestamp = 3;
 }
 
 message GamePhase {

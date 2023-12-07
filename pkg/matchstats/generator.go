@@ -107,7 +107,7 @@ func (m *Generator) OnNewRefereeMessage(matchStats *MatchStats, referee *referee
 	m.gamePhaseDetector.OnNewRefereeMessage(matchStats, referee)
 }
 
-func packetTimeStampToTime(packetTimestamp uint64) time.Time {
+func packetTimestampToTime(packetTimestamp uint64) time.Time {
 	seconds := int64(packetTimestamp / 1_000_000)
 	nanoSeconds := int64(packetTimestamp-uint64(seconds*1_000_000)) * 1000
 	return time.Unix(seconds, nanoSeconds)

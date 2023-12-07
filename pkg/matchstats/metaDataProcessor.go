@@ -86,14 +86,14 @@ func (m *MetaDataProcessor) OnFirstRefereeMessage(matchStats *MatchStats, ref *r
 	}
 
 	matchStats.Shootout = false
-	m.startTime = packetTimeStampToTime(*ref.PacketTimestamp)
+	m.startTime = packetTimestampToTime(*ref.PacketTimestamp)
 	matchStats.StartTime = uint64(m.startTime.UnixNano() / 1000)
 }
 
 func (m *MetaDataProcessor) OnLastRefereeMessage(matchStats *MatchStats, ref *referee.Referee) {
 	processTeam(matchStats.TeamStatsBlue, ref.Blue, ref.Yellow)
 	processTeam(matchStats.TeamStatsYellow, ref.Yellow, ref.Blue)
-	endTime := packetTimeStampToTime(*ref.PacketTimestamp)
+	endTime := packetTimestampToTime(*ref.PacketTimestamp)
 	matchStats.MatchDuration = endTime.Sub(m.startTime).Microseconds()
 	matchStats.Type = mapMatchType(ref.MatchType)
 

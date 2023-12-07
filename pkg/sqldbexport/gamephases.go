@@ -50,6 +50,7 @@ func (p *SqlDbExporter) insertGamePhase(gamePhase *matchstats.GamePhase, matchId
 					 for_team,
 					 entry_command,
 					 entry_command_for_team,
+					 entry_command_timestamp,
 					 exit_command,
 					 exit_command_for_team,
 					 proposed_next_command,
@@ -60,7 +61,7 @@ func (p *SqlDbExporter) insertGamePhase(gamePhase *matchstats.GamePhase, matchId
 					 stage_time_left_entry,
 					 stage_time_left_exit
                      ) 
-				VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)`,
+				VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)`,
 		id,
 		matchId,
 		convertTime(gamePhase.StartTime),
@@ -70,6 +71,7 @@ func (p *SqlDbExporter) insertGamePhase(gamePhase *matchstats.GamePhase, matchId
 		gamePhase.ForTeam.String()[5:],
 		gamePhase.CommandEntry.Type.String()[8:],
 		gamePhase.CommandEntry.ForTeam.String()[5:],
+		convertTime(gamePhase.CommandEntry.Timestamp),
 		gamePhase.CommandExit.Type.String()[8:],
 		gamePhase.CommandExit.ForTeam.String()[5:],
 		nextCommandType,
