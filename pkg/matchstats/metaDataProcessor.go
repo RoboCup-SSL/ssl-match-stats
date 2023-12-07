@@ -6,6 +6,18 @@ import (
 	"time"
 )
 
+// map of team names that are not correct in the log files
+var teamNameFixes = map[string]string{
+	"Ri-One":           "Ri-one",
+	"nAMeC":            "NAMeC",
+	"Op-AmP":           "OP-AmP",
+	"Robobulls":        "RoboBulls",
+	"RobôCIn":          "RobôCin",
+	"STOx's":           "STOx’s",
+	"Tigers Mannheim":  "TIGERs Mannheim",
+	"UMass MinuteBots": "UMass Minutebots",
+}
+
 type MetaDataProcessor struct {
 	startTime time.Time
 	// [microseconds]
@@ -165,9 +177,8 @@ func processTeam(stats *TeamStats, team *referee.Referee_TeamInfo, otherTeam *re
 }
 
 func fixTeamName(teamName string) string {
-	if teamName == "Ri-One" {
-		// team name was available and used in GC in both variations -.-
-		return "Ri-one"
+	if fixedName, ok := teamNameFixes[teamName]; ok {
+		return fixedName
 	}
 	return teamName
 }
