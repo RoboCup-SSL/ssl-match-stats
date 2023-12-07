@@ -18,3 +18,8 @@ from matches
                group by match_id_fk) as mifds on match_id_fk = matches.id
 where abs(EXTRACT(epoch FROM duration - duration_sum)) > 1
 order by diff desc;
+
+-- there should not be duplicate key names due to different writing (check it manually)
+select distinct team_name
+from team_match_stats
+order by team_name;
