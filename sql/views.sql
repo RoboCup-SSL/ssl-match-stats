@@ -1,88 +1,50 @@
-create view game_phase_duration_per_type AS
-select match_id_fk,
-       type,
-       sum(duration) as duration,
-       count(*) as count
-from game_phases
-group by match_id_fk, type;
+drop view if exists game_phase_duration_per_match;
+create view game_phase_duration_per_match AS
+select gp.match_id_fk,
+       gp.type,
+       count(*) as count,
+       sum(gp.duration) as total,
+       min(gp.duration) as min,
+       avg(gp.duration) as avg,
+       max(gp.duration) as max,
+       percentile_disc(0.25) within group (order by gp.duration) as p25,
+       percentile_disc(0.5) within group (order by gp.duration) as median,
+       percentile_disc(0.75) within group (order by gp.duration) as p75
+from game_phases gp
+group by gp.type, gp.match_id_fk;
 
-create materialized view match_stats as
-select m.id as match_id_fk,
-       m.duration,
-       (select duration
-        from game_phase_duration_per_type pt
-        where pt.match_id_fk = m.id and pt.type = 'RUNNING') as duration_running,
-       (select duration
-        from game_phase_duration_per_type pt
-        where pt.match_id_fk = m.id and pt.type = 'STOP') as duration_stop,
-       (select duration
-        from game_phase_duration_per_type pt
-        where pt.match_id_fk = m.id and pt.type = 'HALT') as duration_halt,
-       (select duration
-        from game_phase_duration_per_type pt
-        where pt.match_id_fk = m.id and pt.type = 'BALL_PLACEMENT') as duration_ball_placement,
-       (select duration
-        from game_phase_duration_per_type pt
-        where pt.match_id_fk = m.id and pt.type = 'TIMEOUT') as duration_timeout,
-       (select sum(duration)
-        from game_phase_duration_per_type pt
-        where pt.match_id_fk = m.id and pt.type not in ('RUNNING', 'STOP', 'HALT', 'BALL_PLACEMENT', 'TIMEOUT') group by id) as duration_other,
-       (select count
-        from game_phase_duration_per_type pt
-        where pt.match_id_fk = m.id and pt.type = 'RUNNING') as count_running,
-       (select count
-        from game_phase_duration_per_type pt
-        where pt.match_id_fk = m.id and pt.type = 'STOP') as count_stop,
-       (select count
-        from game_phase_duration_per_type pt
-        where pt.match_id_fk = m.id and pt.type = 'HALT') as count_halt,
-       (select count
-        from game_phase_duration_per_type pt
-        where pt.match_id_fk = m.id and pt.type = 'BALL_PLACEMENT') as count_ball_placement,
-       (select count
-        from game_phase_duration_per_type pt
-        where pt.match_id_fk = m.id and pt.type = 'TIMEOUT') as count_timeout,
-       (select sum(goals)
-        from team_match_stats pt
-        where pt.match_id_fk = m.id) as goals,
-       (select sum(fouls)
-        from team_match_stats pt
-        where pt.match_id_fk = m.id) as fouls,
-       (select sum(yellow_cards)
-        from team_match_stats pt
-        where pt.match_id_fk = m.id) as yellow_cards,
-       (select sum(red_cards)
-        from team_match_stats pt
-        where pt.match_id_fk = m.id) as red_cards,
-       (select sum(timeouts_taken)
-        from team_match_stats pt
-        where pt.match_id_fk = m.id) as timeouts_taken,
-       (select sum(timeout_time)
-        from team_match_stats pt
-        where pt.match_id_fk = m.id) as timeout_time,
-       (select sum(ball_placement_time)
-        from team_match_stats pt
-        where pt.match_id_fk = m.id) as ball_placement_time,
-       (select sum(ball_placements)
-        from team_match_stats pt
-        where pt.match_id_fk = m.id) as ball_placements,
-       (select sum(penalty_shots_total)
-        from team_match_stats pt
-        where pt.match_id_fk = m.id) as penalty_shots_total
-from matches m;
+drop view if exists game_phase_duration_per_tournament;
+create view game_phase_duration_per_tournament AS
+select m.tournament_name,
+       m.division,
+       gp.type,
+       count(*) as count,
+       sum(gp.duration) as total,
+       min(gp.duration) as min,
+       avg(gp.duration) as avg,
+       max(gp.duration) as max,
+       percentile_disc(0.25) within group (order by gp.duration) as p25,
+       percentile_disc(0.5) within group (order by gp.duration) as median,
+       percentile_disc(0.75) within group (order by gp.duration) as p75
+from game_phases gp
+join matches m on m.id = gp.match_id_fk
+group by m.tournament_name, m.division, gp.type;
 
-drop view tournament_game_phase_duration;
-create view tournament_game_phase_duration as
-select tournament_name,
-       division,
-       s.type,
-       min(s.duration)                                                                                          as min,
-       avg(s.duration)                                                                                          as avg,
-       max(s.duration)                                                                                          as max,
-       make_interval(secs := EXTRACT(epoch FROM percentile_disc(0.90) within group (order by s.duration desc))) as p90
-from game_phase_duration_per_type s
-         left join matches on matches.id = match_id_fk
-group by tournament_name, division, s.type;
+drop view if exists game_phase_duration_per_team;
+create view game_phase_duration_per_team AS
+select m.team_name,
+       gp.type,
+       count(*) as count,
+       sum(gp.duration) as total,
+       min(gp.duration) as min,
+       avg(gp.duration) as avg,
+       max(gp.duration) as max,
+       percentile_disc(0.25) within group (order by gp.duration) as p25,
+       percentile_disc(0.5) within group (order by gp.duration) as median,
+       percentile_disc(0.75) within group (order by gp.duration) as p75
+from game_phases gp
+         join team_match_stats m on m.match_id_fk = gp.match_id_fk
+group by m.team_name, gp.type;
 
 create or replace view tournament_stats as
 select matches.tournament_name,
