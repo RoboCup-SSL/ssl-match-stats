@@ -13,7 +13,7 @@ import (
 func main() {
 	flag.Usage = usage
 
-	sqlDriver := flag.String("sqlDriver", "postgres", "SQL driver")
+	sqlDriver := flag.String("sqlDriver", "pgx", "SQL driver")
 	sqlDbSource := flag.String("sqlDbSource", "", "SQL connection string, for example: postgres://user:password@host:port/ssl_match_stats")
 	tournament := flag.String("tournament", "", "The tournament the log files are from")
 	division := flag.String("division", "", "The division of the log files. Should be one of: DivA, DivB, none")
@@ -42,7 +42,7 @@ func main() {
 
 	exporter := sqldbexport.SqlDbExporter{}
 	if err := exporter.Connect(*sqlDriver, *sqlDbSource); err != nil {
-		log.Fatalf("Could not connect to database with driver '%v' at '%v'", *sqlDriver, *sqlDbSource)
+		log.Fatalf("Could not connect to database with driver '%v' at '%v': %v", *sqlDriver, *sqlDbSource, err)
 	}
 
 	var ch = make(chan string, *parallel)

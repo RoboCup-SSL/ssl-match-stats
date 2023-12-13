@@ -3,7 +3,7 @@ package sqldbexport
 import (
 	"context"
 	"database/sql"
-	_ "github.com/lib/pq"
+	_ "github.com/jackc/pgx/v5/stdlib"
 	"time"
 )
 
@@ -18,7 +18,6 @@ func (p *SqlDbExporter) Connect(driver string, dataSourceName string) error {
 		return err
 	}
 	p.db = db
-	db.SetConnMaxLifetime(time.Minute * 30)
 	p.ctx = context.Background()
 	return nil
 }
@@ -29,6 +28,6 @@ func convertTime(timestamp uint64) time.Time {
 	return time.Unix(startTimeSec, startTimeNsec)
 }
 
-func convertDuration(duration int64) float64 {
-	return time.Duration(duration * 1000).Seconds()
+func convertDuration(duration int64) time.Duration {
+	return time.Duration(duration * 1000)
 }
