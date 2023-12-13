@@ -23,3 +23,10 @@ order by diff desc;
 select distinct team_name
 from team_match_stats
 order by team_name;
+
+-- check sum of accepted/proposed/withdrawn events
+select type,
+       total,
+       accepted + accepted_withdrawn + proposed + proposed_withdrawn as sum
+from game_event_type_metrics_overall
+where total <> accepted + accepted_withdrawn + proposed + proposed_withdrawn;
