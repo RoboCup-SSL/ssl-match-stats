@@ -12,7 +12,7 @@ proto:
 	tools/generateProto.sh
 
 flyway-remote:
-	docker run --net host -v $(shell pwd)/sql:/flyway/sql -v $(shell pwd)/flyway.conf:/flyway/flyway.conf flyway/flyway:10 migrate
+	docker run --net host -v $(shell pwd)/sql/flyway:/flyway/sql -v $(shell pwd)/flyway.conf:/flyway/flyway.conf flyway/flyway:10 migrate
 
 flyway-local:
 	docker compose up flyway
