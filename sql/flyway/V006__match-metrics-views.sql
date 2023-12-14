@@ -12,7 +12,7 @@ select m.id                         as match_id_fk,
        sum(gecm.accepted)           as ball_out
 from matches m
          join team_match_stats tms on tms.match_id_fk = m.id
-         join game_event_category_metrics gecm on gecm.match_id_fk = m.id
+         left join game_event_category_metrics gecm on gecm.match_id_fk = m.id
     and gecm.category = 'BALL_OUT'
 group by m.id;
 
@@ -31,7 +31,7 @@ select m.tournament_name,
        sum(gecm.accepted)          as ball_out
 from matches m
          join match_metrics mm on mm.match_id_fk = m.id
-         join game_event_category_metrics gecm on gecm.tournament_name = m.tournament_name
+         left join game_event_category_metrics gecm on gecm.tournament_name = m.tournament_name
     and gecm.division = m.division
     and gecm.category = 'BALL_OUT'
 group by m.tournament_name, m.division
@@ -52,7 +52,7 @@ select m.tournament_name,
        avg(gecm.accepted)          as ball_out
 from matches m
          join match_metrics mm on mm.match_id_fk = m.id
-         join game_event_category_metrics gecm on gecm.tournament_name = m.tournament_name
+         left join game_event_category_metrics gecm on gecm.tournament_name = m.tournament_name
     and gecm.division = m.division
     and gecm.category = 'BALL_OUT'
 group by m.tournament_name, m.division
@@ -71,7 +71,7 @@ select sum(mm.goals)               as goals,
        sum(gecm.accepted)          as ball_out
 from matches m
          join match_metrics mm on mm.match_id_fk = m.id
-         join game_event_category_metrics gecm on gecm.category = 'BALL_OUT';
+         left join game_event_category_metrics gecm on gecm.category = 'BALL_OUT';
 
 create view match_metrics_overall_avg AS
 select avg(mm.goals)               as goals,
@@ -86,4 +86,4 @@ select avg(mm.goals)               as goals,
        sum(gecm.accepted)          as ball_out
 from matches m
          join match_metrics mm on mm.match_id_fk = m.id
-         join game_event_category_metrics gecm on gecm.category = 'BALL_OUT';
+         left join game_event_category_metrics gecm on gecm.category = 'BALL_OUT';

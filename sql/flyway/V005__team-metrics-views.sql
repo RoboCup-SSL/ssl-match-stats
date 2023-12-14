@@ -16,7 +16,7 @@ select mm.team_name,
        sum(gecm.accepted)              as ball_out
 from matches m
          join team_match_stats mm on mm.match_id_fk = m.id
-         join game_event_category_metrics gecm on gecm.team_name = mm.team_name
+         left join game_event_category_metrics gecm on gecm.team_name = mm.team_name
     and gecm.tournament_name = m.tournament_name
     and gecm.division = m.division
     and gecm.category = 'BALL_OUT'
@@ -41,7 +41,7 @@ select mm.team_name,
        avg(gecm.accepted)              as ball_out
 from matches m
          join team_match_stats mm on mm.match_id_fk = m.id
-         join game_event_category_metrics gecm on gecm.team_name = mm.team_name
+         left join game_event_category_metrics gecm on gecm.team_name = mm.team_name
     and gecm.tournament_name = m.tournament_name
     and gecm.division = m.division
     and gecm.category = 'BALL_OUT'
@@ -62,7 +62,7 @@ select mm.team_name,
        sum(gecm.accepted)          as ball_out
 from matches m
          join team_match_stats mm on mm.match_id_fk = m.id
-         join game_event_category_metrics gecm on gecm.team_name = mm.team_name
+         left join game_event_category_metrics gecm on gecm.team_name = mm.team_name
     and gecm.category = 'BALL_OUT'
 group by mm.team_name;
 
@@ -80,6 +80,6 @@ select mm.team_name,
        avg(gecm.accepted)          as ball_out
 from matches m
          join team_match_stats mm on mm.match_id_fk = m.id
-         join game_event_category_metrics gecm on gecm.team_name = mm.team_name
+         left join game_event_category_metrics gecm on gecm.team_name = mm.team_name
     and gecm.category = 'BALL_OUT'
 group by mm.team_name;
