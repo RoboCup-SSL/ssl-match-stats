@@ -30,7 +30,7 @@ create type team_color as enum ('UNKNOWN', 'YELLOW', 'BLUE', 'NONE');
 create table team_match_stats
 (
     id                      uuid primary key,
-    match_id_fk             uuid references matches (id),
+    match_id_fk             uuid references matches (id) ON DELETE CASCADE,
     team_color              team_color,
     team_name               varchar(255),
     opponent_name           varchar(255),
@@ -102,7 +102,7 @@ create type stage as enum (
 create table game_phases
 (
     id                             uuid primary key,
-    match_id_fk                    uuid references matches (id),
+    match_id_fk                    uuid references matches (id) ON DELETE CASCADE,
     start_time                     timestamp,
     end_time                       timestamp,
     duration                       interval(3), -- millisecond precision
