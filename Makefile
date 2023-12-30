@@ -11,8 +11,8 @@ install:
 proto:
 	tools/generateProto.sh
 
-flyway-remote:
+flyway-migrate:
 	docker run --net host -v $(shell pwd)/sql/flyway:/flyway/sql -v $(shell pwd)/flyway.conf:/flyway/flyway.conf flyway/flyway:10 migrate
 
-flyway-local:
-	docker compose up flyway
+flyway-repair:
+	docker run --net host -v $(shell pwd)/sql/flyway:/flyway/sql -v $(shell pwd)/flyway.conf:/flyway/flyway.conf flyway/flyway:10 repair
