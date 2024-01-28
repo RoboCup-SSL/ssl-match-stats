@@ -1,7 +1,7 @@
 create view game_event_category_metrics as
 select m.id                                                   as match_id_fk,
        m.file_name                                            as file_name,
-       ge.category::text                                      as category,
+       ge.category::text                                      as game_event_category,
        m.tournament_name                                      as tournament_name,
        m.division::text                                       as division,
        count(*)                                               as total,
@@ -16,7 +16,9 @@ group by m.id, ge.category, m.tournament_name, m.division;
 
 create view game_event_category_metrics_per_team as
 select tms.team_name                                          as team_name,
-       ge.category::text                                      as category,
+       m.id                                                   as match_id_fk,
+       m.file_name                                            as file_name,
+       ge.category::text                                      as game_event_category,
        m.tournament_name                                      as tournament_name,
        m.division::text                                       as division,
        count(*)                                               as total,
@@ -30,4 +32,4 @@ from game_events ge
          join team_match_stats tms on m.id = tms.match_id_fk
 where gp.for_team = 'NONE'
    or gp.for_team = tms.team_color
-group by tms.team_name, ge.category, m.tournament_name, m.division;
+group by m.id, tms.team_name, ge.category, m.tournament_name, m.division;

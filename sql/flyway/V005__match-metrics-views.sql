@@ -15,7 +15,7 @@ select m.file_name             as file_name,
 from matches m
          join team_match_stats tms on tms.match_id_fk = m.id
          left join game_event_category_metrics gecm on gecm.match_id_fk = m.id
-    and gecm.category = 'BALL_OUT';
+    and gecm.game_event_category = 'BALL_OUT';
 
 create view match_metrics_per_team as
 select tms.team_name               as team_name,
@@ -39,4 +39,4 @@ from matches m
          left join game_event_category_metrics_per_team gecm on gecm.team_name = tms.team_name
     and gecm.tournament_name = m.tournament_name
     and gecm.division = m.division::text
-    and gecm.category = 'BALL_OUT';
+    and gecm.game_event_category = 'BALL_OUT';
