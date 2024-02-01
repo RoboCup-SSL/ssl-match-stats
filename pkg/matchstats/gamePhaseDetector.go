@@ -1,9 +1,11 @@
 package matchstats
 
 import (
+	"crypto/md5"
+	"fmt"
 	"github.com/RoboCup-SSL/ssl-match-stats/internal/referee"
+	"google.golang.org/protobuf/proto"
 	"log"
-	"reflect"
 )
 
 type GamePhaseDetector struct {
@@ -122,17 +124,24 @@ func (d *GamePhaseDetector) OnNewRefereeMessage(_ *MatchStats, ref *referee.Refe
 
 func processGameEvents(gameEvents []*GameEventTimed, newGameEvents []*referee.GameEvent, timestamp uint64) []*GameEventTimed {
 
-	for _, presentGameEvent := range gameEvents {
-		if !containsGameEvent(presentGameEvent.GameEvent, newGameEvents) {
-			presentGameEvent.Withdrawn = true
+	// add game event id, if there is none yet
+	for _, newGameEvent := range newGameEvents {
+		upsertGameEventId(newGameEvent)
+	}
+
+	// mark game events as withdrawn, if they are not in the new game events anymore
+	for _, gameEvent := range gameEvents {
+		if !containsGameEvent(gameEvent.GameEvent, newGameEvents) {
+			gameEvent.Withdrawn = true
 		}
 	}
 
-	for _, presentGameEvent := range newGameEvents {
-		if !containsGameEventTimed(presentGameEvent, gameEvents) {
-			category := gameEventCategory(*presentGameEvent.Type)
+	// add new game events
+	for _, newGameEvent := range newGameEvents {
+		if !containsGameEventTimed(newGameEvent, gameEvents) {
+			category := gameEventCategory(*newGameEvent.Type)
 			gameEventTimed := GameEventTimed{
-				GameEvent: presentGameEvent,
+				GameEvent: newGameEvent,
 				Timestamp: timestamp,
 				Withdrawn: false,
 				Category:  category,
@@ -144,9 +153,23 @@ func processGameEvents(gameEvents []*GameEventTimed, newGameEvents []*referee.Ga
 	return gameEvents
 }
 
+func upsertGameEventId(gameEvent *referee.GameEvent) {
+	if gameEvent.Id != nil {
+		return
+	}
+	b, err := proto.Marshal(gameEvent)
+	if err != nil {
+		log.Fatal("Could not marshal game event: ", gameEvent, err)
+	}
+	h := md5.New()
+	h.Write(b)
+	gameEvent.Id = new(string)
+	*gameEvent.Id = fmt.Sprintf("%x", h.Sum(nil))
+}
+
 func containsGameEventTimed(gameEvent *referee.GameEvent, gameEvents []*GameEventTimed) bool {
 	for _, existingEvent := range gameEvents {
-		if reflect.DeepEqual(existingEvent.GameEvent, gameEvent) {
+		if *existingEvent.GameEvent.Id == *gameEvent.Id {
 			return true
 		}
 	}
@@ -155,7 +178,7 @@ func containsGameEventTimed(gameEvent *referee.GameEvent, gameEvents []*GameEven
 
 func containsGameEvent(gameEvent *referee.GameEvent, gameEvents []*referee.GameEvent) bool {
 	for _, existingEvent := range gameEvents {
-		if reflect.DeepEqual(existingEvent, gameEvent) {
+		if *existingEvent.Id == *gameEvent.Id {
 			return true
 		}
 	}

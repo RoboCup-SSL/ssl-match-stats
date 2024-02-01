@@ -6,6 +6,7 @@ import (
 	"github.com/RoboCup-SSL/ssl-match-stats/internal/sslcommon"
 	"github.com/RoboCup-SSL/ssl-match-stats/pkg/matchstats"
 	"github.com/google/uuid"
+	"log"
 	"reflect"
 	"time"
 )
@@ -41,8 +42,12 @@ func (p *SqlDbExporter) insertGameEvent(gameEvent *matchstats.GameEventTimed, ga
 		*createdTimestamp = convertTime(*gameEvent.GameEvent.CreatedTimestamp)
 	}
 
-	gameEventId := uuid.New()
-	_, err = p.db.Exec(
+	if gameEvent.GameEvent.Id == nil {
+		log.Fatal("Game event id is nil: ", gameEvent)
+	}
+
+	gameEventId := *gameEvent.GameEvent.Id
+	result, err := p.db.Exec(
 		`INSERT INTO game_events (
                      id, 
                      game_phase_id_fk, 
@@ -55,7 +60,8 @@ func (p *SqlDbExporter) insertGameEvent(gameEvent *matchstats.GameEventTimed, ga
 					 proposed,
 					 payload
                      ) 
-				VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+				VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+				ON CONFLICT DO NOTHING`,
 		gameEventId,
 		gamePhaseId,
 		gameEvent.GameEvent.Type.String(),
@@ -72,16 +78,18 @@ func (p *SqlDbExporter) insertGameEvent(gameEvent *matchstats.GameEventTimed, ga
 		return err
 	}
 
-	for _, origin := range gameEvent.GameEvent.Origin {
-		if err := p.insertOriginToGameEventMapping(gameEventId, origin); err != nil {
-			return err
+	if rows, err := result.RowsAffected(); err != nil && rows == 1 {
+		for _, origin := range gameEvent.GameEvent.Origin {
+			if err := p.insertOriginToGameEventMapping(gameEventId, origin); err != nil {
+				return err
+			}
 		}
 	}
 
 	return err
 }
 
-func (p *SqlDbExporter) insertOriginToGameEventMapping(gameEventId uuid.UUID, origin string) error {
+func (p *SqlDbExporter) insertOriginToGameEventMapping(gameEventId string, origin string) error {
 	_, err := p.db.Exec(
 		`INSERT INTO game_event_origin_mapping (
 			     game_event_id_fk,
