@@ -115,7 +115,6 @@ message GameEventTimed {
     GameEvent game_event = 1;
     uint64 timestamp = 2;
     bool withdrawn = 3;
-    GameEventCategory category = 4;
 }
 
 message TeamStats {

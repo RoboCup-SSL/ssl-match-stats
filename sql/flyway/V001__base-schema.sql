@@ -186,7 +186,6 @@ create table game_events
     id                uuid primary key,
     game_phase_id_fk  uuid references game_phases (id) on delete cascade,
     type              game_event          not null,
-    category          game_event_category not null,
     by_team           varchar(7)          not null,
     timestamp         timestamp           not null,
     -- timestamp when event was created by the GC. This data was not available in the past, so it might be null.
@@ -202,4 +201,10 @@ create table game_event_origin_mapping
     game_event_id_fk  uuid references game_events (id) on delete cascade,
     game_event_origin varchar,
     primary key (game_event_id_fk, game_event_origin)
+);
+
+create table game_event_categories
+(
+    type game_event primary key,
+    category game_event_category not null
 );

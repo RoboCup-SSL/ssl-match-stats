@@ -52,7 +52,6 @@ func (p *SqlDbExporter) insertGameEvent(gameEvent *matchstats.GameEventTimed, ga
                      id, 
                      game_phase_id_fk, 
                      type,
-					 category,
 					 by_team,
 					 timestamp,
 					 created_timestamp,
@@ -60,12 +59,11 @@ func (p *SqlDbExporter) insertGameEvent(gameEvent *matchstats.GameEventTimed, ga
 					 proposed,
 					 payload
                      ) 
-				VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+				VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 				ON CONFLICT DO NOTHING`,
 		gameEventId,
 		gamePhaseId,
 		gameEvent.GameEvent.Type.String(),
-		gameEvent.Category.String()[9:],
 		byTeam.String()[5:],
 		convertTime(gameEvent.Timestamp),
 		createdTimestamp,
