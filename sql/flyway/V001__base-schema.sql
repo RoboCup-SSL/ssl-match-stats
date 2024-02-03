@@ -208,3 +208,13 @@ create table game_event_categories
     type     game_event primary key,
     category game_event_category not null
 );
+
+create table robot_count
+(
+    id               uuid primary key,
+    game_phase_id_fk uuid references game_phases (id) on delete cascade,
+    team_color       team_color  not null,
+    start_time       timestamp   not null,
+    duration         interval(3) not null, -- millisecond precision
+    count            int         not null
+);

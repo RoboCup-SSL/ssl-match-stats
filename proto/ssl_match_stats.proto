@@ -85,6 +85,16 @@ message Command {
     uint64 timestamp = 3;
 }
 
+message RobotCount {
+    // [microseconds]
+    uint64 start_time = 1;
+    // [microseconds]
+    int64 duration = 2;
+
+    int32 count = 3;
+    TeamColor team_color = 4;
+}
+
 message GamePhase {
     // [microseconds]
     uint64 start_time = 1;
@@ -109,6 +119,8 @@ message GamePhase {
     Command command_prev = 14;
     repeated GameEventTimed game_events_applied = 15;
     repeated GameEventTimed game_events_proposed = 16;
+
+    repeated RobotCount robot_count = 17;
 }
 
 message GameEventTimed {

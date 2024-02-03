@@ -91,5 +91,42 @@ func (p *SqlDbExporter) insertGamePhase(gamePhase *matchstats.GamePhase, matchId
 		return err
 	}
 
-	return p.WriteGameEvents(gamePhase.GameEventsProposed, id, GameEventKindProposed)
+	if err := p.WriteGameEvents(gamePhase.GameEventsProposed, id, GameEventKindProposed); err != nil {
+		return err
+	}
+
+	for _, robotCount := range gamePhase.RobotCount {
+		if err := p.WriteRobotCount(robotCount, id); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (p *SqlDbExporter) WriteRobotCount(robotCount *matchstats.RobotCount, gamePhaseId uuid.UUID) error {
+	id := uuid.New()
+
+	_, err := p.db.Exec(
+		`INSERT INTO robot_count (
+                     id, 
+                     game_phase_id_fk, 
+                     start_time,
+					 duration,
+					 count,
+					 team_color
+                     ) 
+				VALUES ($1, $2, $3, $4, $5, $6)`,
+		id,
+		gamePhaseId,
+		convertTime(robotCount.StartTime),
+		convertDuration(robotCount.Duration),
+		robotCount.Count,
+		robotCount.TeamColor.String()[5:],
+	)
+
+	if err != nil {
+		return err
+	}
+	return nil
 }

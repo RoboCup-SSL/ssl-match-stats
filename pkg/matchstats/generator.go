@@ -3,6 +3,7 @@ package matchstats
 import (
 	"github.com/RoboCup-SSL/ssl-go-tools/pkg/persistence"
 	"github.com/RoboCup-SSL/ssl-match-stats/internal/referee"
+	"github.com/RoboCup-SSL/ssl-match-stats/internal/vision"
 	"github.com/pkg/errors"
 	"google.golang.org/protobuf/proto"
 	"log"
@@ -11,30 +12,57 @@ import (
 )
 
 type Generator struct {
-	metaDataProcessor *MetaDataProcessor
-	gamePhaseDetector *GamePhaseDetector
+	matchStats *MatchStats
+
+	currentPhase        *GamePhase
+	currentRobotCount   map[TeamColor]*RobotCount
+	robotFirstDetection map[TeamColor]map[uint32]float64
+	robotLastDetection  map[TeamColor]map[uint32]float64
+	gamePaused          bool
+	startTime           time.Time
+	penaltyKickTeam     TeamColor
 }
 
 func NewGenerator() *Generator {
-	generator := new(Generator)
-	generator.metaDataProcessor = NewMetaDataProcessor()
-	generator.gamePhaseDetector = NewGamePhaseDetector()
-	return generator
+	return &Generator{
+		currentRobotCount: map[TeamColor]*RobotCount{
+			TeamColor_TEAM_YELLOW: nil,
+			TeamColor_TEAM_BLUE:   nil,
+		},
+		robotFirstDetection: map[TeamColor]map[uint32]float64{
+			TeamColor_TEAM_YELLOW: make(map[uint32]float64),
+			TeamColor_TEAM_BLUE:   make(map[uint32]float64),
+		},
+		robotLastDetection: map[TeamColor]map[uint32]float64{
+			TeamColor_TEAM_YELLOW: make(map[uint32]float64),
+			TeamColor_TEAM_BLUE:   make(map[uint32]float64),
+		},
+	}
 }
 
-func (m *Generator) Process(filename string) (*MatchStats, error) {
+func (g *Generator) Process(filename string) (*MatchStats, error) {
 
 	logReader, err := persistence.NewReader(filename)
 	if err != nil {
 		return nil, errors.Wrap(err, "Could not read file")
 	}
 
-	matchStats := new(MatchStats)
-	matchStats.Name = filepath.Base(filename)
+	g.matchStats = new(MatchStats)
+	g.matchStats.Name = filepath.Base(filename)
 	var lastRefereeMsg *referee.Referee
 
 	channel := logReader.CreateChannel()
 	for c := range channel {
+		if c.MessageType.Id == persistence.MessageSslVision2014 {
+			v, err := getVisionMsg(c)
+			if err != nil {
+				log.Println("Could not parse vision message: ", err)
+				continue
+			}
+			g.OnNewVisionMessage(v)
+			continue
+		}
+
 		if c.MessageType.Id != persistence.MessageSslRefbox2013 {
 			continue
 		}
@@ -45,37 +73,33 @@ func (m *Generator) Process(filename string) (*MatchStats, error) {
 		}
 
 		if lastRefereeMsg == nil {
-			m.OnFirstRefereeMessage(matchStats, r)
+			g.OnFirstRefereeMessageMeta(r)
 		} else if *r.PacketTimestamp < *lastRefereeMsg.PacketTimestamp {
 			log.Printf("Skip out of order referee message:\nPrev:%v\nCurr:%v\n", lastRefereeMsg, r)
 			continue
 		}
 
 		if lastRefereeMsg == nil || *r.Stage != *lastRefereeMsg.Stage {
-			m.OnNewStage(matchStats, r)
+			g.OnNewStage(r)
 		}
 
 		if lastRefereeMsg == nil || *r.Command != *lastRefereeMsg.Command {
-			m.OnNewCommand(matchStats, r)
+			g.OnNewCommand(r)
 		}
 
-		m.OnNewRefereeMessage(matchStats, r)
+		g.OnNewRefereeMessage(r)
 
 		lastRefereeMsg = r
 	}
 
 	if lastRefereeMsg != nil {
-		m.OnLastRefereeMessage(matchStats, lastRefereeMsg)
+		g.OnLastRefereeMessage(lastRefereeMsg)
 	}
 
-	return matchStats, logReader.Close()
+	return g.matchStats, logReader.Close()
 }
 
 func getRefereeMsg(logMessage *persistence.Message) (refereeMsg *referee.Referee, err error) {
-	if logMessage.MessageType.Id != persistence.MessageSslRefbox2013 {
-		return
-	}
-
 	refereeMsg = new(referee.Referee)
 	if err := proto.Unmarshal(logMessage.Message, refereeMsg); err != nil {
 		err = errors.Wrap(err, "Could not parse referee message")
@@ -83,32 +107,40 @@ func getRefereeMsg(logMessage *persistence.Message) (refereeMsg *referee.Referee
 	return
 }
 
-func (m *Generator) OnNewStage(matchStats *MatchStats, referee *referee.Referee) {
-	m.metaDataProcessor.OnNewStage(matchStats, referee)
-	m.gamePhaseDetector.OnNewStage(matchStats, referee)
+func getVisionMsg(logMessage *persistence.Message) (visionMsg *vision.SSL_WrapperPacket, err error) {
+	visionMsg = new(vision.SSL_WrapperPacket)
+	if err := proto.Unmarshal(logMessage.Message, visionMsg); err != nil {
+		err = errors.Wrap(err, "Could not parse vision message")
+	}
+	return
 }
 
-func (m *Generator) OnNewCommand(matchStats *MatchStats, referee *referee.Referee) {
-	m.metaDataProcessor.OnNewCommand(matchStats, referee)
-	m.gamePhaseDetector.OnNewCommand(matchStats, referee)
+func (g *Generator) OnNewStage(referee *referee.Referee) {
+	g.handleNewStageForMetaData(referee)
+	g.handleNewStageForGamePhases(referee)
 }
 
-func (m *Generator) OnFirstRefereeMessage(matchStats *MatchStats, referee *referee.Referee) {
-	m.metaDataProcessor.OnFirstRefereeMessage(matchStats, referee)
+func (g *Generator) OnNewCommand(ref *referee.Referee) {
+	g.handlePenaltyKick(ref)
+
+	if !g.gamePaused {
+
+		phaseType := mapProtoCommandToGamePhaseType(*ref.Command)
+		if phaseType != GamePhaseType_PHASE_UNKNOWN {
+			g.startNewGamePhase(ref, phaseType)
+		}
+	}
 }
 
-func (m *Generator) OnLastRefereeMessage(matchStats *MatchStats, referee *referee.Referee) {
-	m.metaDataProcessor.OnLastRefereeMessage(matchStats, referee)
-	m.gamePhaseDetector.OnLastRefereeMessage(matchStats, referee)
+func (g *Generator) OnLastRefereeMessage(ref *referee.Referee) {
+	g.finalizeMatchStats(ref)
+	g.stopCurrentGamePhase(ref)
 }
 
-func (m *Generator) OnNewRefereeMessage(matchStats *MatchStats, referee *referee.Referee) {
-	m.metaDataProcessor.OnNewRefereeMessage(matchStats, referee)
-	m.gamePhaseDetector.OnNewRefereeMessage(matchStats, referee)
-}
-
-func packetTimestampToTime(packetTimestamp uint64) time.Time {
-	seconds := int64(packetTimestamp / 1_000_000)
-	nanoSeconds := int64(packetTimestamp-uint64(seconds*1_000_000)) * 1000
-	return time.Unix(seconds, nanoSeconds)
+func (g *Generator) OnNewRefereeMessage(ref *referee.Referee) {
+	g.updateMaxActiveYellowCards(ref.Blue, g.matchStats.TeamStatsBlue)
+	g.updateMaxActiveYellowCards(ref.Yellow, g.matchStats.TeamStatsYellow)
+	g.processGameEvents(ref)
+	g.processRobotCount(ref, TeamColor_TEAM_YELLOW)
+	g.processRobotCount(ref, TeamColor_TEAM_BLUE)
 }
