@@ -31,6 +31,8 @@ function process() {
     "${match_stats_dir}"/*.bin
 }
 
+process "$base_dir/2024/div-a" RoboCup2024 DivA
+process "$base_dir/2024/div-b" RoboCup2024 DivB
 process "$base_dir/2023/div-a" RoboCup2023 DivA
 process "$base_dir/2023/div-b" RoboCup2023 DivB
 process "$base_dir/2022/div-a" RoboCup2022 DivA
