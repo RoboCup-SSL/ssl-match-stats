@@ -1,5 +1,7 @@
 github.com/RoboCup-SSL/ssl-go-tools v1.6.0 h1:fdEbPTPBVdF3OC2KVUSszPWEe7KDi1Hp7RqWFvc8gIg=
 github.com/RoboCup-SSL/ssl-go-tools v1.6.0/go.mod h1:ycaXdkApKC1TNrxBaZ8XsLuYpgMyI+u7onQStKNd9rc=
+github.com/RoboCup-SSL/ssl-go-tools v1.7.0 h1:v35Oab/nh6x7Fjd9dua8CeewMwFyli2Pq7R2g3y4YMo=
+github.com/RoboCup-SSL/ssl-go-tools v1.7.0/go.mod h1:pU+14mxlBE33vZiZQNunox+F2sqCwgEq0dA4Kvz8C2I=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
