@@ -16,3 +16,8 @@ flyway-migrate:
 
 flyway-repair:
 	docker run --net host -v $(shell pwd)/sql/flyway:/flyway/sql -v $(shell pwd)/flyway.conf:/flyway/flyway.conf flyway/flyway:10 repair
+
+update-go:
+	go get -v -u all
+
+update: update-go proto
