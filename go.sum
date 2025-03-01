@@ -2,6 +2,8 @@ github.com/RoboCup-SSL/ssl-go-tools v1.6.0 h1:fdEbPTPBVdF3OC2KVUSszPWEe7KDi1Hp7R
 github.com/RoboCup-SSL/ssl-go-tools v1.6.0/go.mod h1:ycaXdkApKC1TNrxBaZ8XsLuYpgMyI+u7onQStKNd9rc=
 github.com/RoboCup-SSL/ssl-go-tools v1.8.0 h1:AbTH3mVZ6X0PiCIVcov8iO187/I4RzR8hnMeGbGpUN8=
 github.com/RoboCup-SSL/ssl-go-tools v1.8.0/go.mod h1:V3++xMi0FGEc2RAe01QyIn3HPplOQC81/3vSLY9I3e0=
+github.com/RoboCup-SSL/ssl-go-tools v1.8.2 h1:aLQud/6UeXgZayhXldMIkZI0BrJg2im7rtMUFPkD5HA=
+github.com/RoboCup-SSL/ssl-go-tools v1.8.2/go.mod h1:FuTw472klW5wAMg09gxQqPCzu6ygxOdMA8D22fDOUfM=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
@@ -48,6 +50,8 @@ google.golang.org/protobuf v1.34.2 h1:6xV6lTsCfpGD21XK49h7MhtcApnLqkfYgPcdHftf6h
 google.golang.org/protobuf v1.34.2/go.mod h1:qYOHts0dSfpeUzUFpOMr/WGzszTmLH+DiWniOlNbLDw=
 google.golang.org/protobuf v1.36.2 h1:R8FeyR1/eLmkutZOM5CWghmo5itiG9z0ktFlTVLuTmU=
 google.golang.org/protobuf v1.36.2/go.mod h1:9fA7Ob0pmnwhb644+1+CVWFRbNajQ6iRojtC/QF5bRE=
+google.golang.org/protobuf v1.36.4 h1:6A3ZDJHn/eNqc1i+IdefRzy/9PokBTPvcqMySR7NNIM=
+google.golang.org/protobuf v1.36.4/go.mod h1:9fA7Ob0pmnwhb644+1+CVWFRbNajQ6iRojtC/QF5bRE=
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
 gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=
 gopkg.in/yaml.v3 v3.0.1 h1:fxVm/GzAzEWqLHuvctI91KS9hhNmmWOoWu0XTYJS7CA=
