@@ -4,7 +4,7 @@ jobs:
   test_go:
     resource_class: medium
     docker:
-      - image: cimg/go:1.24.0@sha256:ef9cfda48dff74501aecbcf01ac9260e93609b9555f25412e279608b5c89cf3c
+      - image: cimg/go:1.24.1@sha256:b5861b5d22f1b2077f978196de5222ed6651dec36cac67c0e6bbf117b3067954
     steps:
       - checkout
       - attach_workspace:
