@@ -1,11 +1,11 @@
 module github.com/RoboCup-SSL/ssl-match-stats
 
-go 1.22
+go 1.23.0
 
 toolchain go1.24.2
 
 require (
-	github.com/RoboCup-SSL/ssl-go-tools v1.8.3
+	github.com/RoboCup-SSL/ssl-go-tools v1.8.4
 	github.com/google/uuid v1.6.0
 	github.com/jackc/pgx/v5 v5.7.4
 	github.com/pkg/errors v0.9.1
