@@ -33,7 +33,7 @@ services:
       - "5432:5432"
 
   flyway:
-    image: "flyway/flyway:11@sha256:5bd8150c77e83a7b886824fd71947b249cbc777af6dc9c2428850e7df961ca05"
+    image: "flyway/flyway:11@sha256:b001b9463f6db9612e58c198a6dbc6a4315e8201a430d407a38e6a32210f39b8"
     command: -url=jdbc:postgresql://db:5432/ssl_match_stats -schemas=public -user=ssl_match_stats -password=ssl_match_stats -connectRetries=60 migrate
     volumes:
       - ./sql/flyway:/flyway/sql
