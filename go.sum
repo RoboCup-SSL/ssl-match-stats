@@ -8,6 +8,8 @@ github.com/RoboCup-SSL/ssl-go-tools v1.8.3 h1:XpYf54zsgqSX2Izg1/mNljzCQxS0lcP3oi
 github.com/RoboCup-SSL/ssl-go-tools v1.8.3/go.mod h1:FuTw472klW5wAMg09gxQqPCzu6ygxOdMA8D22fDOUfM=
 github.com/RoboCup-SSL/ssl-go-tools v1.8.4 h1:elTwW3bnQkG18cbdlbZvPA1/mFFcAvHTyE3HWHU0Jw8=
 github.com/RoboCup-SSL/ssl-go-tools v1.8.4/go.mod h1:6o2pvRBsIaz548hvpClat6hwwoXRpJBRel1kUM6YCB4=
+github.com/RoboCup-SSL/ssl-go-tools v1.9.1 h1:1Z5O2FEG3lAOzQlY25f829LC+ueqmfiCzerpswaP5i0=
+github.com/RoboCup-SSL/ssl-go-tools v1.9.1/go.mod h1:t4NO5iYqUYnPRMohDk8MoEQImeulQUYJknZiN6XfguU=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
