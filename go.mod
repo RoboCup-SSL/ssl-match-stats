@@ -7,7 +7,7 @@ toolchain go1.25.6
 require (
 	github.com/RoboCup-SSL/ssl-go-tools v1.9.3
 	github.com/google/uuid v1.6.0
-	github.com/jackc/pgx/v5 v5.7.6
+	github.com/jackc/pgx/v5 v5.8.0
 	github.com/pkg/errors v0.9.1
 	google.golang.org/protobuf v1.36.11
 )
