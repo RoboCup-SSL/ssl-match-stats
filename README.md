@@ -45,7 +45,7 @@ The command requires some parameters:
 ```shell
 ssl-match-stats-db \
   -parallel=16 \
-  -sqlDbSource="postgres://ssl_match_stats:ssl_match_stats@localhost:5432/ssl_match_stats?sslmode=disable" \
+  -sqlDbSource="postgres://ssl_match_stats:ssl_match_stats@localhost:5432/ssl_match_stats?sslmode=disable&search_path=public" \
   -tournament=Test \
   -division=DivA \
   stats/*.bin
