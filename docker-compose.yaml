@@ -1,7 +1,7 @@
 version: '3'
 services:
   metabase:
-    image: "metabase/metabase:latest@sha256:7075d01d471477a435ac12334a5ece82240782d616056e77bfb9fc9824a814bc"
+    image: "metabase/metabase:latest@sha256:2855e0a55878c520c7f71ee207ec4c402d287bea359879361c2d735055a5b5a3"
     volumes:
       - /dev/urandom:/dev/random:ro
     ports:
