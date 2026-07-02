@@ -17,14 +17,14 @@ services:
       - metabase-db
 
   metabase-db:
-    image: "postgres:18@sha256:78481659c47e862334611ccdaf7c369c986b3046da9857112f3b309114a65fb4"
+    image: "postgres:18@sha256:4aabea78cf39b90e834caf3af7d602a18565f6fe2508705c8d01aa63245c2e20"
     environment:
       POSTGRES_DB: metabase
       POSTGRES_USER: metabase
       POSTGRES_PASSWORD: metabase
 
   db:
-    image: "postgres:18@sha256:78481659c47e862334611ccdaf7c369c986b3046da9857112f3b309114a65fb4"
+    image: "postgres:18@sha256:4aabea78cf39b90e834caf3af7d602a18565f6fe2508705c8d01aa63245c2e20"
     environment:
       POSTGRES_DB: ssl_match_stats
       POSTGRES_USER: ssl_match_stats
